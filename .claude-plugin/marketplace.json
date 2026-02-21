@@ -1,11 +1,16 @@
 {
   "name": "n24q02m",
-  "description": "Mnemo memory plugins by n24q02m",
+  "owner": {
+    "name": "n24q02m"
+  },
+  "metadata": {
+    "description": "Mnemo memory plugins by n24q02m"
+  },
   "plugins": [
     {
       "name": "mnemo-plugin",
       "description": "Persistent memory for Claude Code - facts, preferences, and decisions survive across sessions",
-      "source": "."
+      "source": "./"
     }
   ]
 }
