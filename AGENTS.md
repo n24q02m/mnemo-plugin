@@ -54,8 +54,18 @@ OpenCode Runtime (Bun)
 
 ### Claude Code Compatibility
 
-The `bin/cli.mjs` script acts as a stdio proxy to `uvx mnemo-mcp`, allowing Claude Code
-to use this as an MCP server: `claude mcp add mnemo-plugin -- npx @n24q02m/mnemo-plugin`
+Claude Code uses the plugin marketplace system. The plugin is installed via:
+```
+/plugin marketplace add n24q02m/mnemo-plugin
+/plugin install mnemo-plugin
+```
+
+Key files for Claude Code integration:
+- `.claude-plugin/marketplace.json` -- marketplace catalog (source: ".")
+- `.claude-plugin/plugin.json` -- plugin metadata
+- `.mcp.json` -- auto-registers MCP server using `${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs`
+- `hooks/hooks.json` -- lifecycle hooks using `${CLAUDE_PLUGIN_ROOT}` paths
+- `bin/cli.mjs` -- stdio proxy to `uvx mnemo-mcp` (suppresses stderr)
 
 ## Code Style
 

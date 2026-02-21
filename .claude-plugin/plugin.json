@@ -1,10 +1,11 @@
 {
   "name": "mnemo-plugin",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Persistent memory for Claude Code - facts, preferences, and decisions survive across sessions",
   "author": {
     "name": "n24q02m"
   },
+  "repository": "https://github.com/n24q02m/mnemo-plugin",
   "license": "MIT",
-  "keywords": ["memory", "persistence", "facts", "preferences", "mnemo"]
+  "keywords": ["memory", "persistence", "facts", "preferences", "mnemo", "mcp"]
 }

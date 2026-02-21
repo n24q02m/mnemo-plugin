@@ -50,13 +50,15 @@ Add to your `opencode.json`:
 
 ### Claude Code
 
-Install the plugin globally:
+In a Claude Code session, run:
 
-```bash
-npm install -g @n24q02m/mnemo-plugin
+```
+/plugin marketplace add n24q02m/mnemo-plugin
+
+/plugin install mnemo-plugin
 ```
 
-Then add to your project's `.claude/plugins.json` or install via Claude Code UI.
+Restart Claude Code. Memory tools and lifecycle hooks are automatically registered.
 
 ## Tools
 

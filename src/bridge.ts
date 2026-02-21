@@ -55,7 +55,8 @@ export class MnemoBridge {
     this.transport = new StdioClientTransport({
       command: 'uvx',
       args: ['mnemo-mcp'],
-      stderr: 'inherit'
+      stderr: 'pipe',
+      env: { ...process.env, LOG_LEVEL: 'WARNING' }
     })
 
     this.client = new Client(

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx @n24q02m/mnemo-plugin hook session-start",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs\" hook session-start",
             "timeout": 10
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx @n24q02m/mnemo-plugin hook stop",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs\" hook stop",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npx @n24q02m/mnemo-plugin hook pre-compact",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs\" hook pre-compact",
             "timeout": 15
           }
         ]
