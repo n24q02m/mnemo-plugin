@@ -1,0 +1,102 @@
+/**
+ * System Prompt Hook
+ *
+ * Injects relevant memories into the system prompt using adaptive budget
+ * based on the model's context window. Inspired by minzique-plugin's
+ * tiered priority injection system.
+ */
+
+import type { Model } from '@opencode-ai/sdk'
+import { MnemoBridge } from '../bridge.js'
+
+/** Memory item returned from mnemo-mcp search */
+interface MemoryResult {
+  id: string
+  category: string
+  content: string
+  tags?: string[]
+}
+
+/** Maximum percentage of context window to use for memory injection */
+const BUDGET_PERCENT = 0.025
+
+/** Budget bounds in characters */
+const MIN_BUDGET = 600
+const MAX_BUDGET = 8000
+
+/** Self-awareness block always injected (tells agent about available memory tools) */
+const SELF_AWARENESS = `You have persistent memory via the Mnemo system. You can use:
+- mnemo_search: Search stored memories, facts, preferences, decisions
+- mnemo_remember: Permanently store new facts, rules, preferences
+- mnemo_forget: Delete outdated or incorrect memories
+Proactively search memory when entering a new codebase or when the user asks about past decisions.`
+
+/** Extract project name from directory path */
+function getProjectName(directory: string): string {
+  const cleanDir = directory.replace(/\\/g, '/')
+  const parts = cleanDir.split('/')
+  return parts[parts.length - 1] || 'unknown'
+}
+
+/** Compute injection budget based on model context limit */
+function computeBudget(model: Model): number {
+  const contextLimit = model?.limit?.context
+  if (!contextLimit || contextLimit <= 0) return MIN_BUDGET
+
+  const budget = Math.floor(contextLimit * BUDGET_PERCENT * 4) // ~4 chars per token
+  return Math.max(MIN_BUDGET, Math.min(MAX_BUDGET, budget))
+}
+
+/** Truncate text to fit within character budget */
+function truncateToFit(text: string, budget: number): string {
+  if (text.length <= budget) return text
+  return `${text.slice(0, budget - 3)}...`
+}
+
+export const systemPromptHook = async (
+  input: { sessionID?: string; model: Model },
+  output: { system: string[] },
+  directory: string,
+) => {
+  try {
+    const bridge = MnemoBridge.getInstance()
+    const projectName = getProjectName(directory)
+    const budget = computeBudget(input.model)
+
+    // Always inject self-awareness block (outside budget)
+    output.system.push(SELF_AWARENESS)
+
+    // Search memories relevant to current project
+    const searchRes = await bridge.callTool('memory', {
+      action: 'search',
+      query: projectName,
+      limit: 10,
+    })
+
+    if (!searchRes || !searchRes.count || searchRes.count === 0) return
+
+    const results = searchRes.results as MemoryResult[]
+
+    // Build memory injection with budget constraint
+    let injection = `[Mnemo Context for "${projectName}"]\n`
+    let usedBudget = injection.length
+
+    for (const mem of results) {
+      const line = `- [${mem.category}] ${mem.content}\n`
+      if (usedBudget + line.length > budget) {
+        // Try to fit a truncated version
+        const remaining = budget - usedBudget
+        if (remaining > 20) {
+          injection += truncateToFit(line, remaining)
+        }
+        break
+      }
+      injection += line
+      usedBudget += line.length
+    }
+
+    output.system.push(injection)
+  } catch (error) {
+    console.error(`[Mnemo] Error injecting system prompt: ${error}`)
+  }
+}

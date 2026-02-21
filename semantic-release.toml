@@ -1,0 +1,17 @@
+[semantic_release]
+version_variables = ["package.json:version"]
+tag_format = "v{version}"
+commit_message = "chore(release): v{version}"
+major_on_zero = false
+commit_parser = "angular"
+
+[semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix"]
+minor_tags = ["feat"]
+patch_tags = ["fix"]
+
+[semantic_release.changelog]
+changelog_file = "CHANGELOG.md"
+
+[semantic_release.remote]
+type = "github"
