@@ -61,11 +61,10 @@ Claude Code uses the plugin marketplace system. The plugin is installed via:
 ```
 
 Key files for Claude Code integration:
-- `.claude-plugin/marketplace.json` -- marketplace catalog (source: ".")
+- `.claude-plugin/marketplace.json` -- marketplace catalog (source: "./")
 - `.claude-plugin/plugin.json` -- plugin metadata
-- `.mcp.json` -- auto-registers MCP server using `${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs`
-- `hooks/hooks.json` -- lifecycle hooks using `${CLAUDE_PLUGIN_ROOT}` paths
-- `bin/cli.mjs` -- stdio proxy to `uvx mnemo-mcp` (suppresses stderr)
+- `.mcp.json` -- auto-registers MCP server using `uvx mnemo-mcp` with `LOG_LEVEL=WARNING`
+- `hooks/hooks.json` -- SessionStart hook runs `uvx mnemo-mcp --version` health check
 
 ## Code Style
 

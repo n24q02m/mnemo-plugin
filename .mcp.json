@@ -2,8 +2,11 @@
   "mcpServers": {
     "mnemo": {
       "type": "stdio",
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs"]
+      "command": "uvx",
+      "args": ["mnemo-mcp"],
+      "env": {
+        "LOG_LEVEL": "WARNING"
+      }
     }
   }
 }
