@@ -94,7 +94,7 @@ async function processCapture(directory: string) {
       action: 'add',
       content: `[Auto-captured for ${projectName}]: ${trimmedContent}`,
       category: 'auto-capture',
-      tags: [projectName, 'preference'],
+      tags: [projectName, 'preference']
     })
 
     console.log(`[Mnemo] Auto-captured a new rule for ${projectName}`)

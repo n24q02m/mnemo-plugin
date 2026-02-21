@@ -42,7 +42,7 @@ describe('MnemoBridge MCP Client', () => {
       action: 'add',
       content: testContent,
       category: 'test',
-      tags: ['integration-test', 'mcp'],
+      tags: ['integration-test', 'mcp']
     })
 
     expect(addRes.status).toBe('saved')
@@ -56,14 +56,13 @@ describe('MnemoBridge MCP Client', () => {
     const searchRes = await bridge.callTool('memory', {
       action: 'search',
       query: testContent,
-      limit: 10,
+      limit: 10
     })
 
     expect(searchRes.count).toBeGreaterThan(0)
     expect(searchRes.results.length).toBeGreaterThan(0)
 
     // Find the specific memory by ID (don't assume ordering)
-    // biome-ignore lint/suspicious/noExplicitAny: dynamic MCP response
     const foundMem = searchRes.results.find((m: any) => m.id === memId)
     expect(foundMem).toBeDefined()
     expect(foundMem.content).toContain(testContent)
@@ -74,14 +73,14 @@ describe('MnemoBridge MCP Client', () => {
       action: 'add',
       content: `Temporary test memory ${Date.now()}`,
       category: 'test',
-      tags: ['delete-test'],
+      tags: ['delete-test']
     })
 
     expect(addRes.id).toBeDefined()
 
     const deleteRes = await bridge.callTool('memory', {
       action: 'delete',
-      memory_id: addRes.id,
+      memory_id: addRes.id
     })
 
     expect(deleteRes.id).toBe(addRes.id)
@@ -89,7 +88,7 @@ describe('MnemoBridge MCP Client', () => {
 
   it('should get memory stats', async () => {
     const statsRes = await bridge.callTool('memory', {
-      action: 'stats',
+      action: 'stats'
     })
 
     expect(statsRes).toBeDefined()

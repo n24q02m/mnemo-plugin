@@ -20,7 +20,7 @@ export const compactionHook = async (_input: { sessionID: string }, output: { co
 
     // Fetch recent/important memories to preserve during compaction
     const statsRes = await bridge.callTool('memory', {
-      action: 'stats',
+      action: 'stats'
     })
 
     const totalMemories = statsRes?.total_memories ?? 0
@@ -29,21 +29,21 @@ export const compactionHook = async (_input: { sessionID: string }, output: { co
       // Load top memories to include in compaction context
       const listRes = await bridge.callTool('memory', {
         action: 'list',
-        limit: 10,
+        limit: 10
       })
 
       if (listRes?.results?.length > 0) {
         const memories = (listRes.results as MemoryResult[]).map((m) => `- [${m.category}] ${m.content}`).join('\n')
 
         output.context.push(
-          `[Mnemo Persistent Memory - Preserve These]\nThe following facts and preferences are stored in persistent memory and must be preserved:\n${memories}`,
+          `[Mnemo Persistent Memory - Preserve These]\nThe following facts and preferences are stored in persistent memory and must be preserved:\n${memories}`
         )
       }
     }
 
     // Always add instruction to preserve preferences during summarization
     output.context.push(
-      'When summarizing this session, explicitly preserve any user preferences, technical constraints, architectural decisions, or project rules that were discussed. These should be saved to persistent memory if not already stored.',
+      'When summarizing this session, explicitly preserve any user preferences, technical constraints, architectural decisions, or project rules that were discussed. These should be saved to persistent memory if not already stored.'
     )
   } catch (error) {
     console.error(`[Mnemo] Error in compaction hook: ${error}`)

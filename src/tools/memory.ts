@@ -34,7 +34,7 @@ export const mnemoSearch: ToolDefinition = tool({
       .string()
       .optional()
       .describe('Filter by category (e.g. "general", "preference", "fact", "architecture")'),
-    limit: tool.schema.number().min(1).max(20).default(5).describe('Max results to return'),
+    limit: tool.schema.number().min(1).max(20).default(5).describe('Max results to return')
   },
   async execute(args, context) {
     const bridge = MnemoBridge.getInstance()
@@ -46,7 +46,7 @@ export const mnemoSearch: ToolDefinition = tool({
         action: 'search',
         query: args.query,
         category: args.category,
-        limit: args.limit,
+        limit: args.limit
       })
 
       if (!response.count || response.count === 0) {
@@ -64,7 +64,7 @@ export const mnemoSearch: ToolDefinition = tool({
       const msg = e instanceof Error ? e.message : String(e)
       return `Failed to search memory: ${msg}`
     }
-  },
+  }
 })
 
 export const mnemoRemember: ToolDefinition = tool({
@@ -76,7 +76,7 @@ export const mnemoRemember: ToolDefinition = tool({
       .string()
       .default('general')
       .describe('Categorize this memory (e.g., "preference", "fact", "architecture", "decision", "bugfix")'),
-    tags: tool.schema.array(tool.schema.string()).optional().describe('Keywords to help retrieve this memory later'),
+    tags: tool.schema.array(tool.schema.string()).optional().describe('Keywords to help retrieve this memory later')
   },
   async execute(args, context) {
     const bridge = MnemoBridge.getInstance()
@@ -96,7 +96,7 @@ export const mnemoRemember: ToolDefinition = tool({
         action: 'add',
         content: args.content,
         category: args.category,
-        tags: finalTags,
+        tags: finalTags
       })
 
       return `Successfully stored memory with ID: ${response.id}. This fact is now permanently saved and will be available in future sessions.`
@@ -104,14 +104,14 @@ export const mnemoRemember: ToolDefinition = tool({
       const msg = e instanceof Error ? e.message : String(e)
       return `Failed to store memory: ${msg}`
     }
-  },
+  }
 })
 
 export const mnemoForget: ToolDefinition = tool({
   description:
     'Delete a specific memory from the mnemo system by its ID. Use this when a preference, fact, or decision is no longer accurate or relevant.',
   args: {
-    memory_id: tool.schema.string().describe('The ID of the memory to delete (obtained from mnemo_search results)'),
+    memory_id: tool.schema.string().describe('The ID of the memory to delete (obtained from mnemo_search results)')
   },
   async execute(args, context) {
     const bridge = MnemoBridge.getInstance()
@@ -121,7 +121,7 @@ export const mnemoForget: ToolDefinition = tool({
 
       const response = await bridge.callTool('memory', {
         action: 'delete',
-        memory_id: args.memory_id,
+        memory_id: args.memory_id
       })
 
       return `Successfully deleted memory ${response.id}. The fact has been permanently removed.`
@@ -129,5 +129,5 @@ export const mnemoForget: ToolDefinition = tool({
       const msg = e instanceof Error ? e.message : String(e)
       return `Failed to delete memory: ${msg}`
     }
-  },
+  }
 })

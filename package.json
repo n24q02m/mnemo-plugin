@@ -1,17 +1,20 @@
 {
   "name": "@n24q02m/mnemo-plugin",
+  "keywords": [
+    "opencode",
+    "claude-code",
+    "mcp",
+    "memory",
+    "plugin",
+    "mnemo"
+  ],
   "version": "0.0.0",
-  "description": "Universal Memory Plugin for OpenCode & Claude Code (Powered by mnemo-mcp)",
+  "license": "MIT",
   "type": "module",
-  "main": "build/src/index.js",
-  "bin": {
-    "mnemo-plugin": "bin/cli.mjs"
-  },
-  "engines": {
-    "node": ">=24.0.0",
-    "pnpm": ">=9.0.0"
-  },
   "packageManager": "pnpm@9.15.4",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc --build && node scripts/build-cli.js",
     "dev": "tsx watch src/index.ts",
@@ -25,39 +28,47 @@
     "type-check": "tsc --noEmit",
     "check": "biome check . && pnpm type-check",
     "check:fix": "biome check --write . && pnpm type-check",
-    "clean": "rm -rf build bin",
     "prepublishOnly": "pnpm build"
   },
-  "publishConfig": {
-    "access": "public"
+  "bin": {
+    "mnemo-plugin": "bin/cli.mjs"
   },
-  "files": ["build/", "bin/", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "files": [
+    "build/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.1.0"
+    "@modelcontextprotocol/sdk": "^1.26.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.3.8",
     "@opencode-ai/plugin": "^1.2.10",
     "@opencode-ai/sdk": "^1.2.10",
-    "@types/node": "^22.9.0",
-    "@vitest/coverage-v8": "^2.1.4",
-    "esbuild": "^0.24.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.4"
+    "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.15",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   },
+  "description": "Universal Memory Plugin for OpenCode & Claude Code (Powered by mnemo-mcp)",
+  "main": "build/src/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/n24q02m/opencode-plugin-mnemo.git"
+    "url": "https://github.com/n24q02m/mnemo-plugin.git"
   },
   "author": "n24q02m",
-  "license": "MIT",
-  "keywords": ["opencode", "claude-code", "mcp", "memory", "plugin", "mnemo"],
   "bugs": {
-    "url": "https://github.com/n24q02m/opencode-plugin-mnemo/issues"
+    "url": "https://github.com/n24q02m/mnemo-plugin/issues"
   },
-  "homepage": "https://github.com/n24q02m/opencode-plugin-mnemo#readme"
+  "homepage": "https://github.com/n24q02m/mnemo-plugin#readme"
 }

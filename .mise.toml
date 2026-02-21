@@ -1,3 +1,8 @@
+# Mise configuration for mnemo-plugin
+# https://mise.jdx.dev/
+#
+# Setup: mise run setup
+
 [tools]
 node = "24"
 pnpm = "latest"
@@ -15,6 +20,7 @@ description = "Setup development environment"
 run = [
   "mise install",
   "pnpm install",
+  "node scripts/clean-venv.mjs",
   "uv pip install pre-commit",
   "uv run pre-commit install",
   "uv run pre-commit install --hook-type commit-msg",
@@ -36,11 +42,3 @@ run = "pnpm check:fix"
 [tasks.dev]
 description = "Start development server"
 run = "pnpm dev"
-
-[tasks.build]
-description = "Build package"
-run = "pnpm build"
-
-[tasks.clean]
-description = "Clean build artifacts"
-run = "pnpm clean"

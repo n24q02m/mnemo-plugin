@@ -65,7 +65,7 @@ to use this as an MCP server: `claude mcp add mnemo-plugin -- npx @n24q02m/mnemo
 - **Line width**: 120
 - **Quotes**: Single quotes
 - **Semicolons**: As needed (omit when possible)
-- **Trailing commas**: All
+- **Trailing commas**: None
 - **Arrow parens**: Always
 - **Bracket spacing**: true
 - **Line endings**: LF
@@ -85,8 +85,8 @@ import { MnemoBridge } from './bridge.js'
 
 ### TypeScript
 
-- `strict: true`, target: ES2023, module: NodeNext, moduleResolution: NodeNext
-- `verbatimModuleSyntax: true` (enforces `import type`)
+- `strict: true`, target: es2021, module: es2022, moduleResolution: Bundler
+- `composite: true` for incremental builds
 - `isolatedModules: true`, `forceConsistentCasingInFileNames: true`
 
 ### Naming Conventions
@@ -108,10 +108,10 @@ import { MnemoBridge } from './bridge.js'
 
 ### Biome Lint Rules
 
-- `noExplicitAny`: **warn** (use `unknown` where possible, `// biome-ignore` for necessary `any`)
-- `noNonNullAssertion`: **warn**
+- `noExplicitAny`: **off** (MCP responses are dynamic JSON)
+- `noNonNullAssertion`: **off**
 - `noUnusedVariables`: warn
-- `noUnusedImports`: error
+- `noUnusedImports`: error (via organizeImports)
 
 ### File Organization
 
@@ -129,6 +129,7 @@ tests/
   bridge.test.ts        # Integration tests (requires uvx mnemo-mcp)
 scripts/
   build-cli.js          # Generates bin/cli.mjs (Claude Code MCP proxy)
+  clean-venv.mjs        # Cross-platform Python venv setup
   enforce-commit.sh     # Commit message enforcement (feat/fix only)
 ```
 

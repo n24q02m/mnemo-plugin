@@ -56,7 +56,7 @@ function truncateToFit(text: string, budget: number): string {
 export const systemPromptHook = async (
   input: { sessionID?: string; model: Model },
   output: { system: string[] },
-  directory: string,
+  directory: string
 ) => {
   try {
     const bridge = MnemoBridge.getInstance()
@@ -70,7 +70,7 @@ export const systemPromptHook = async (
     const searchRes = await bridge.callTool('memory', {
       action: 'search',
       query: projectName,
-      limit: 10,
+      limit: 10
     })
 
     if (!searchRes || !searchRes.count || searchRes.count === 0) return

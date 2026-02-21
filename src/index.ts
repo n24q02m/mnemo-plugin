@@ -31,7 +31,7 @@ const plugin: Plugin = async (input) => {
     tool: {
       mnemo_search: mnemoSearch,
       mnemo_remember: mnemoRemember,
-      mnemo_forget: mnemoForget,
+      mnemo_forget: mnemoForget
     },
 
     // Hooks
@@ -49,7 +49,7 @@ const plugin: Plugin = async (input) => {
 
     'experimental.session.compacting': async (inParams, outParams) => {
       await compactionHook(inParams, outParams)
-    },
+    }
   }
 }
 

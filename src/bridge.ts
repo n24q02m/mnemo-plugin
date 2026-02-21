@@ -55,17 +55,17 @@ export class MnemoBridge {
     this.transport = new StdioClientTransport({
       command: 'uvx',
       args: ['mnemo-mcp'],
-      stderr: 'inherit',
+      stderr: 'inherit'
     })
 
     this.client = new Client(
       {
         name: 'mnemo-plugin',
-        version: '0.0.0',
+        version: '0.0.0'
       },
       {
-        capabilities: {},
-      },
+        capabilities: {}
+      }
     )
 
     await this.client.connect(this.transport)
@@ -82,7 +82,6 @@ export class MnemoBridge {
    * Automatically connects if not already connected.
    * Returns the parsed JSON response from the tool.
    */
-  // biome-ignore lint/suspicious/noExplicitAny: MCP tool responses are dynamic JSON
   public async callTool(name: string, args: Record<string, unknown>): Promise<any> {
     const client = await this.connect()
 
@@ -94,9 +93,9 @@ export class MnemoBridge {
     const result = await client.callTool(
       {
         name,
-        arguments: args,
+        arguments: args
       },
-      CallToolResultSchema,
+      CallToolResultSchema
     )
 
     if (result.isError) {

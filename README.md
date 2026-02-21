@@ -1,5 +1,9 @@
 # @n24q02m/mnemo-plugin
 
+[![CI](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@n24q02m/mnemo-plugin)](https://www.npmjs.com/package/@n24q02m/mnemo-plugin)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Universal Memory Plugin for [OpenCode](https://opencode.ai) & [Claude Code](https://docs.anthropic.com/en/docs/claude-code) - Powered by [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp).
 
 Gives your AI coding assistant **persistent memory** across sessions. Facts, preferences, architectural decisions, and project rules are stored permanently and automatically loaded into context.
@@ -45,6 +49,18 @@ Add to your `opencode.json`:
 ```
 
 ### Claude Code
+
+**Option 1: Plugin (recommended)**
+
+Install the Claude Code plugin from npm:
+
+```bash
+npm install -g @n24q02m/mnemo-plugin
+```
+
+Then add to your project's `.claude/plugins.json` or install via Claude Code UI.
+
+**Option 2: MCP Server**
 
 ```bash
 claude mcp add mnemo-plugin -- npx @n24q02m/mnemo-plugin
