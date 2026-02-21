@@ -8,6 +8,7 @@ bin/
 .eslintcache
 
 .cursor
+.claude
 
 .DS_Store
 .env

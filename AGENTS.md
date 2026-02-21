@@ -33,31 +33,51 @@ mise run fix                # pnpm check:fix
 
 ## Architecture
 
-This plugin is an MCP **client** that spawns `uvx mnemo-mcp` as a subprocess and communicates
-via JSON-RPC 2.0 over stdio. The plugin delegates all heavy work (SQLite FTS5, Qwen3 vector
-search, rclone sync) to the Python mnemo-mcp server.
+Full memory support requires BOTH the plugin and MCP server running together:
+
+| Component | Role | What it provides |
+|-----------|------|------------------|
+| **Plugin** (this package) | Proactive | Hooks: system-prompt injection, auto-capture, compaction |
+| **MCP Server** (mnemo-mcp) | Reactive | Tools: search, remember, forget -- AI calls when needed |
 
 ```
-OpenCode Runtime (Bun)
+AI Coding Assistant
   |
-  +-- mnemo-plugin (this package)
-  |     |-- tools: mnemo_search, mnemo_remember, mnemo_forget
-  |     |-- hooks: system-prompt, auto-capture, compaction
+  +-- mnemo-plugin (TypeScript) ........... hooks (proactive)
   |     |
-  |     +-- MnemoBridge (MCP Client via StdioClientTransport)
-  |           |
-  |           +-- uvx mnemo-mcp (Python subprocess)
-  |                 |-- SQLite FTS5 (keyword search)
-  |                 |-- Qwen3 embeddings (semantic search)
-  |                 |-- rclone sync (backup)
+  |     +-- MnemoBridge -> uvx mnemo-mcp subprocess (for hook operations)
+  |
+  +-- mnemo-mcp (Python, standalone) ..... tools (reactive, with env config)
+        |-- SQLite FTS5 (keyword search)
+        |-- Qwen3 embeddings (semantic search)
+        |-- rclone sync (backup)
 ```
 
-### Claude Code Compatibility
+### OpenCode Setup
 
-Claude Code uses the plugin marketplace system. The plugin is installed via:
+Both plugin AND MCP server in `opencode.json`:
+
+```json
+{
+  "plugin": ["@n24q02m/mnemo-plugin@latest"],
+  "mcp": {
+    "mnemo": {
+      "type": "local",
+      "command": ["uvx", "--python", "3.13", "mnemo-mcp@latest"],
+      "environment": { "LOG_LEVEL": "WARNING" },
+      "enabled": true
+    }
+  }
+}
+```
+
+### Claude Code Setup
+
+Plugin bundles both MCP server and hooks:
+
 ```
 /plugin marketplace add n24q02m/mnemo-plugin
-/plugin install mnemo-plugin
+/plugin install mnemo-plugin@n24q02m
 ```
 
 Key files for Claude Code integration:
