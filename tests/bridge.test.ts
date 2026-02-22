@@ -9,7 +9,7 @@ import * as path from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { MnemoBridge } from '../src/bridge.js'
 
-describe('MnemoBridge MCP Client', () => {
+describe.skipIf(!process.env.INTEGRATION_TEST)('MnemoBridge MCP Client', () => {
   let bridge: MnemoBridge
   const tempDbPath = path.join(os.tmpdir(), `mnemo-test-${Date.now()}.db`)
 
