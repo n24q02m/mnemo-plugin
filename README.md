@@ -87,11 +87,13 @@ Restart Claude Code. The plugin automatically registers:
 
 ## Tools (via MCP server)
 
-| Tool | Description |
-|------|-------------|
-| `mnemo_search` / `memory_search` | Search stored memories by query, with optional category filter |
-| `mnemo_remember` / `memory_add` | Store a new persistent memory (fact, preference, decision) |
-| `mnemo_forget` / `memory_delete` | Delete an outdated or incorrect memory by ID |
+The MCP server provides three mega-tools. See [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) for full documentation.
+
+| Tool | Actions | Description |
+|------|---------|-------------|
+| `memory` | add, search, list, update, delete, export, import, stats | Persistent memory CRUD and management |
+| `config` | status, sync, set | Server configuration and cloud sync |
+| `help` | -- | Full documentation for all tools |
 
 ## Hooks (via plugin)
 

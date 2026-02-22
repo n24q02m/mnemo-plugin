@@ -38,7 +38,7 @@ Full memory support requires BOTH the plugin and MCP server running together:
 | Component | Role | What it provides |
 |-----------|------|------------------|
 | **Plugin** (this package) | Proactive | Hooks: system-prompt injection, auto-capture, compaction |
-| **MCP Server** (mnemo-mcp) | Reactive | Tools: search, remember, forget -- AI calls when needed |
+| **MCP Server** (mnemo-mcp) | Reactive | Tools: memory, config, help -- AI calls when needed |
 
 ```
 AI Coding Assistant
