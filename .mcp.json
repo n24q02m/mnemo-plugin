@@ -3,7 +3,7 @@
     "mnemo": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["mnemo-mcp"],
+      "args": ["--python", "3.13", "mnemo-mcp"],
       "env": {
         "LOG_LEVEL": "WARNING"
       }
