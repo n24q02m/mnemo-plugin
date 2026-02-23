@@ -22,7 +22,6 @@ const plugin: Plugin = async (input) => {
   setTimeout(async () => {
     try {
       await bridge.connect()
-      console.log(`[Mnemo] Connected to persistent memory for ${input.directory}`)
     } catch {
       // Silently handled -- circuit breaker will prevent further attempts.
       // Hooks check bridge.isAvailable() before calling, so no cascading errors.
