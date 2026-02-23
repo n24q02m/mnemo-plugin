@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.1 (2026-02-23)
+
+### Bug Fixes
+
+- Pin Python 3.13 in Claude Code MCP config
+  ([`fe45084`](https://github.com/n24q02m/mnemo-plugin/commit/fe4508418d83794d03e9f232bef634a14a117020))
+
+
 ## v1.2.0 (2026-02-23)
 
 ### Bug Fixes
