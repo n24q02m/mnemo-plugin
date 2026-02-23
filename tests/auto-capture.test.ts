@@ -5,7 +5,7 @@
  * module-level mutable state (sessionBuffer, capturedHashes, lastCaptureTime).
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 // Dynamic import type for reset
 type AutoCapture = typeof import('../src/hooks/auto-capture.js')
@@ -71,53 +71,50 @@ describe('auto-capture', () => {
     it('only triggers on session.idle event', async () => {
       const { mod, mockCallTool } = await freshModule()
 
-      await mod.autoCaptureHook(
-        { event: { type: 'session.start' } as any },
-        '/home/user/app'
-      )
+      await mod.autoCaptureHook({ event: { type: 'session.start' } as any }, '/home/user/app')
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('skips when buffer is empty', async () => {
       const { mod, mockCallTool } = await freshModule()
 
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
-      )
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('captures constraint-like messages on idle', async () => {
       const { mod, mockCallTool } = await freshModule()
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'You must always use pnpm for package management' }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/my-project'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'You must always use pnpm for package management' }]
+        }
       )
 
-      expect(mockCallTool).toHaveBeenCalledWith('memory', expect.objectContaining({
-        action: 'add',
-        category: 'auto-capture',
-        tags: ['my-project', 'preference']
-      }))
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/my-project')
+
+      expect(mockCallTool).toHaveBeenCalledWith(
+        'memory',
+        expect.objectContaining({
+          action: 'add',
+          category: 'auto-capture',
+          tags: ['my-project', 'preference']
+        })
+      )
     })
 
     it('skips non-constraint messages', async () => {
       const { mod, mockCallTool } = await freshModule()
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'Hello, how are you today?' }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'Hello, how are you today?' }]
+        }
       )
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).not.toHaveBeenCalled()
     })
@@ -126,25 +123,25 @@ describe('auto-capture', () => {
       const { mod, mockCallTool } = await freshModule()
 
       // First capture
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'Always use strict mode' }]
-      })
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'Always use strict mode' }]
+        }
       )
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).toHaveBeenCalledTimes(1)
 
       // Same content again — buffer the same text
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'Always use strict mode' }]
-      })
-      // Second capture attempt should be deduped by hash
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'Always use strict mode' }]
+        }
       )
+      // Second capture attempt should be deduped by hash
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       // Still only 1 call — second was deduped
       expect(mockCallTool).toHaveBeenCalledTimes(1)
@@ -154,14 +151,14 @@ describe('auto-capture', () => {
       const { mod, mockIsAvailable, mockCallTool } = await freshModule()
       mockIsAvailable.mockReturnValue(false)
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'You must always test your code' }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'You must always test your code' }]
+        }
       )
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).not.toHaveBeenCalled()
     })
@@ -170,14 +167,14 @@ describe('auto-capture', () => {
       const { mod, mockCallTool } = await freshModule()
       const longConstraint = `You must always ${'follow this rule '.repeat(100)}`
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: longConstraint }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: longConstraint }]
+        }
       )
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       const callArgs = mockCallTool.mock.calls[0][1]
       // Content should be truncated (500 char limit + prefix)
@@ -189,14 +186,14 @@ describe('auto-capture', () => {
       mockCallTool.mockRejectedValue(new Error('bridge down'))
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'Never use var in JavaScript' }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        '/home/user/app'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'Never use var in JavaScript' }]
+        }
       )
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(consoleSpy).toHaveBeenCalled()
       consoleSpy.mockRestore()
@@ -205,34 +202,48 @@ describe('auto-capture', () => {
     it('extracts project name from Windows path', async () => {
       const { mod, mockCallTool } = await freshModule()
 
-      await mod.messageHook({}, {
-        parts: [{ type: 'text', text: 'Ensure all tests pass before commit' }]
-      })
-
-      await mod.autoCaptureHook(
-        { event: { type: 'session.idle' } as any },
-        'C:\\Users\\dev\\projects\\win-project'
+      await mod.messageHook(
+        {},
+        {
+          parts: [{ type: 'text', text: 'Ensure all tests pass before commit' }]
+        }
       )
 
-      expect(mockCallTool).toHaveBeenCalledWith('memory', expect.objectContaining({
-        tags: ['win-project', 'preference']
-      }))
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, 'C:\\Users\\dev\\projects\\win-project')
+
+      expect(mockCallTool).toHaveBeenCalledWith(
+        'memory',
+        expect.objectContaining({
+          tags: ['win-project', 'preference']
+        })
+      )
     })
 
     it('matches various constraint keywords', async () => {
-      const keywords = ['always', 'never', 'must', 'prefer', "don't", 'do not', 'should not', 'make sure', 'ensure', 'require']
+      const keywords = [
+        'always',
+        'never',
+        'must',
+        'prefer',
+        "don't",
+        'do not',
+        'should not',
+        'make sure',
+        'ensure',
+        'require'
+      ]
 
       for (const keyword of keywords) {
         const { mod, mockCallTool } = await freshModule()
 
-        await mod.messageHook({}, {
-          parts: [{ type: 'text', text: `You ${keyword} use this convention in code` }]
-        })
-
-        await mod.autoCaptureHook(
-          { event: { type: 'session.idle' } as any },
-          '/home/user/app'
+        await mod.messageHook(
+          {},
+          {
+            parts: [{ type: 'text', text: `You ${keyword} use this convention in code` }]
+          }
         )
+
+        await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
         expect(mockCallTool).toHaveBeenCalled()
       }

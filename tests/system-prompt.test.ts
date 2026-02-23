@@ -34,11 +34,7 @@ describe('systemPromptHook', () => {
   it('always injects self-awareness block', async () => {
     mockIsAvailable.mockReturnValue(false)
 
-    await systemPromptHook(
-      { model: { limit: { context: 100_000 } } as any },
-      output,
-      '/home/user/projects/my-app'
-    )
+    await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/projects/my-app')
 
     expect(output.system.length).toBe(1)
     expect(output.system[0]).toContain('mnemo_search')
@@ -49,11 +45,7 @@ describe('systemPromptHook', () => {
   it('skips memory injection when bridge is unavailable', async () => {
     mockIsAvailable.mockReturnValue(false)
 
-    await systemPromptHook(
-      { model: { limit: { context: 100_000 } } as any },
-      output,
-      '/home/user/my-app'
-    )
+    await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/my-app')
 
     // Only SELF_AWARENESS, no memory injection
     expect(output.system.length).toBe(1)
@@ -97,11 +89,7 @@ describe('systemPromptHook', () => {
       ]
     })
 
-    await systemPromptHook(
-      { model: { limit: { context: 200_000 } } as any },
-      output,
-      '/home/user/my-app'
-    )
+    await systemPromptHook({ model: { limit: { context: 200_000 } } as any }, output, '/home/user/my-app')
 
     // SELF_AWARENESS + memory injection
     expect(output.system.length).toBe(2)
@@ -113,11 +101,7 @@ describe('systemPromptHook', () => {
   it('does not inject when search returns zero results', async () => {
     mockCallTool.mockResolvedValue({ count: 0, results: [] })
 
-    await systemPromptHook(
-      { model: { limit: { context: 100_000 } } as any },
-      output,
-      '/home/user/my-app'
-    )
+    await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/my-app')
 
     expect(output.system.length).toBe(1)
   })
@@ -131,11 +115,7 @@ describe('systemPromptHook', () => {
     })
 
     // Use a model with small context so budget is MIN_BUDGET (600)
-    await systemPromptHook(
-      { model: { limit: { context: 1000 } } as any },
-      output,
-      '/home/user/app'
-    )
+    await systemPromptHook({ model: { limit: { context: 1000 } } as any }, output, '/home/user/app')
 
     expect(output.system.length).toBe(2)
     // The injection should contain truncated content ending with '...'
@@ -149,11 +129,7 @@ describe('systemPromptHook', () => {
       results: [{ id: '1', category: 'info', content: 'Short memory', tags: [] }]
     })
 
-    await systemPromptHook(
-      { model: {} as any },
-      output,
-      '/home/user/app'
-    )
+    await systemPromptHook({ model: {} as any }, output, '/home/user/app')
 
     expect(output.system.length).toBe(2)
     expect(output.system[1]).toContain('Short memory')
@@ -163,11 +139,7 @@ describe('systemPromptHook', () => {
     mockCallTool.mockRejectedValue(new Error('Network error'))
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    await systemPromptHook(
-      { model: { limit: { context: 100_000 } } as any },
-      output,
-      '/home/user/app'
-    )
+    await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/app')
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Network error'))
     consoleSpy.mockRestore()
@@ -176,11 +148,7 @@ describe('systemPromptHook', () => {
   it('handles null searchRes gracefully', async () => {
     mockCallTool.mockResolvedValue(null)
 
-    await systemPromptHook(
-      { model: { limit: { context: 100_000 } } as any },
-      output,
-      '/home/user/app'
-    )
+    await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/app')
 
     // Only SELF_AWARENESS
     expect(output.system.length).toBe(1)

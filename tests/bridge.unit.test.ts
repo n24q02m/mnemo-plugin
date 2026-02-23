@@ -28,10 +28,13 @@ import { MnemoBridge } from '../src/bridge.js'
  * Helper: create a bridge instance with doConnect mocked to set up
  * the internal state as if a real connection was established.
  */
-function setupBridgeWithMockConnect(bridge: MnemoBridge, opts?: {
-  tools?: string[]
-  connectError?: Error
-}) {
+function setupBridgeWithMockConnect(
+  bridge: MnemoBridge,
+  opts?: {
+    tools?: string[]
+    connectError?: Error
+  }
+) {
   const mockClient = {
     connect: vi.fn().mockResolvedValue(undefined),
     listTools: vi.fn().mockResolvedValue({
@@ -50,9 +53,7 @@ function setupBridgeWithMockConnect(bridge: MnemoBridge, opts?: {
     if (opts?.connectError) throw opts.connectError
     ;(bridge as any).transport = mockTransport
     ;(bridge as any).client = mockClient
-    ;(bridge as any).availableTools = new Set(
-      (opts?.tools ?? ['memory', 'config'])
-    )
+    ;(bridge as any).availableTools = new Set(opts?.tools ?? ['memory', 'config'])
     return mockClient
   })
 
@@ -126,7 +127,7 @@ describe('MnemoBridge', () => {
 
     it('reuses existing connection', async () => {
       const bridge = MnemoBridge.getInstance()
-      const { mockClient } = setupBridgeWithMockConnect(bridge)
+      setupBridgeWithMockConnect(bridge)
 
       const c1 = await bridge.connect()
       const c2 = await bridge.connect()
@@ -233,7 +234,7 @@ describe('MnemoBridge', () => {
   describe('callTool', () => {
     it('parses JSON response', async () => {
       const bridge = MnemoBridge.getInstance()
-      const { mockClient } = setupBridgeWithMockConnect(bridge)
+      setupBridgeWithMockConnect(bridge)
 
       const result = await bridge.callTool('memory', { action: 'stats' })
       expect(result).toEqual({ status: 'ok' })
@@ -253,9 +254,7 @@ describe('MnemoBridge', () => {
       setupBridgeWithMockConnect(bridge)
       await bridge.connect()
 
-      await expect(bridge.callTool('nonexistent', {})).rejects.toThrow(
-        'Tool "nonexistent" not found'
-      )
+      await expect(bridge.callTool('nonexistent', {})).rejects.toThrow('Tool "nonexistent" not found')
     })
 
     it('throws on error response from server', async () => {
