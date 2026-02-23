@@ -2,6 +2,25 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-02-23)
+
+### Bug Fixes
+
+- Correct MCP tool names in docs (memory/config/help mega-tools)
+  ([`d44c092`](https://github.com/n24q02m/mnemo-plugin/commit/d44c092197d7cc38c8347009cd8b73ad9fc645e1))
+
+- Resolve biome lint errors in test files
+  ([`de10b28`](https://github.com/n24q02m/mnemo-plugin/commit/de10b287411670a319b567f1fac0704e1289805b))
+
+- Skip integration tests in CI unless INTEGRATION_TEST env is set
+  ([`504b136`](https://github.com/n24q02m/mnemo-plugin/commit/504b136bc65f62698181710e2ae5fd983da41d58))
+
+### Features
+
+- Add circuit breaker, timeouts, and isAvailable guard to MCP bridge
+  ([`935fc0d`](https://github.com/n24q02m/mnemo-plugin/commit/935fc0d527b051d3d5595e90ee6a7b43907fa7f5))
+
+
 ## v1.1.0 (2026-02-21)
 
 ### Bug Fixes
