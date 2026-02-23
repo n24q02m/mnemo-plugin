@@ -4,6 +4,9 @@
  * Singleton class that manages a persistent MCP connection to the mnemo-mcp
  * Python server via stdio transport. Spawns `uvx mnemo-mcp` as a subprocess
  * and communicates via JSON-RPC 2.0.
+ *
+ * Includes circuit breaker to prevent repeated connection attempts when
+ * mnemo-mcp is unavailable, and timeouts to prevent indefinite hangs.
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
@@ -16,12 +19,48 @@ interface ContentItem {
   text?: string
 }
 
+/** Wrap a promise with a timeout. Rejects with TimeoutError if deadline exceeded. */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms}ms`))
+    }, ms)
+
+    promise.then(
+      (val) => {
+        clearTimeout(timer)
+        resolve(val)
+      },
+      (err) => {
+        clearTimeout(timer)
+        reject(err)
+      }
+    )
+  })
+}
+
+/** Circuit breaker: stop retrying after repeated failures */
+const MAX_FAILURES = 3
+
+/** Cooldown period before resetting circuit breaker (5 minutes) */
+const COOLDOWN_MS = 300_000
+
+/** Timeout for MCP connection handshake (30 seconds) */
+const CONNECT_TIMEOUT_MS = 30_000
+
+/** Timeout for individual tool calls (15 seconds) */
+const CALL_TIMEOUT_MS = 15_000
+
 export class MnemoBridge {
   private static instance: MnemoBridge
   private client: Client | null = null
   private transport: StdioClientTransport | null = null
   private connecting: Promise<Client> | null = null
   private availableTools: Set<string> | null = null
+
+  /** Circuit breaker state */
+  private failCount = 0
+  private lastFailTime = 0
 
   private constructor() {}
 
@@ -32,9 +71,33 @@ export class MnemoBridge {
     return MnemoBridge.instance
   }
 
+  /**
+   * Check if the bridge is likely available.
+   * Returns false when circuit breaker is open (too many recent failures).
+   * Hooks should check this before attempting calls to avoid log noise.
+   */
+  public isAvailable(): boolean {
+    if (this.client) return true
+    if (this.failCount < MAX_FAILURES) return true
+
+    // Circuit breaker open -- check if cooldown has elapsed
+    const elapsed = Date.now() - this.lastFailTime
+    return elapsed >= COOLDOWN_MS
+  }
+
   /** Connect to mnemo-mcp server, reusing existing connection if available */
   public async connect(): Promise<Client> {
     if (this.client) return this.client
+
+    // Circuit breaker: reject immediately if too many recent failures
+    if (this.failCount >= MAX_FAILURES) {
+      const elapsed = Date.now() - this.lastFailTime
+      if (elapsed < COOLDOWN_MS) {
+        throw new Error('mnemo-mcp temporarily unavailable (circuit breaker open)')
+      }
+      // Cooldown elapsed -- reset and allow retry
+      this.failCount = 0
+    }
 
     // If already connecting, wait for that promise to resolve
     if (this.connecting) return this.connecting
@@ -42,7 +105,12 @@ export class MnemoBridge {
     this.connecting = this.doConnect()
     try {
       const client = await this.connecting
+      this.failCount = 0
       return client
+    } catch (e) {
+      this.failCount++
+      this.lastFailTime = Date.now()
+      throw e
     } finally {
       this.connecting = null
     }
@@ -55,7 +123,7 @@ export class MnemoBridge {
     this.transport = new StdioClientTransport({
       command: 'uvx',
       args: ['mnemo-mcp'],
-      stderr: 'pipe',
+      stderr: 'ignore', // Prevent stderr backpressure and log noise
       env: { ...process.env, LOG_LEVEL: 'WARNING' }
     })
 
@@ -69,10 +137,11 @@ export class MnemoBridge {
       }
     )
 
-    await this.client.connect(this.transport)
+    // Connect with timeout to prevent indefinite hang during first-run model download
+    await withTimeout(this.client.connect(this.transport), CONNECT_TIMEOUT_MS, 'MCP connect')
 
     // Cache available tool names on first connect
-    const toolsResult = await this.client.listTools()
+    const toolsResult = await withTimeout(this.client.listTools(), CALL_TIMEOUT_MS, 'listTools')
     this.availableTools = new Set(toolsResult.tools.map((t) => t.name))
 
     return this.client
@@ -91,12 +160,16 @@ export class MnemoBridge {
       throw new Error(`Tool "${name}" not found in mnemo-mcp server. Available: ${[...this.availableTools].join(', ')}`)
     }
 
-    const result = await client.callTool(
-      {
-        name,
-        arguments: args
-      },
-      CallToolResultSchema
+    const result = await withTimeout(
+      client.callTool(
+        {
+          name,
+          arguments: args
+        },
+        CallToolResultSchema
+      ),
+      CALL_TIMEOUT_MS,
+      `callTool(${name})`
     )
 
     if (result.isError) {

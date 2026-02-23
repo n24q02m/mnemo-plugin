@@ -18,6 +18,9 @@ export const compactionHook = async (_input: { sessionID: string }, output: { co
   try {
     const bridge = MnemoBridge.getInstance()
 
+    // Skip if bridge is unavailable (circuit breaker open)
+    if (!bridge.isAvailable()) return
+
     // Fetch recent/important memories to preserve during compaction
     const statsRes = await bridge.callTool('memory', {
       action: 'stats'

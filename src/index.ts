@@ -16,13 +16,16 @@ import { mnemoForget, mnemoRemember, mnemoSearch } from './tools/memory.js'
 const plugin: Plugin = async (input) => {
   const bridge = MnemoBridge.getInstance()
 
-  // Start bridge connection in background (non-blocking)
+  // Start bridge connection in background (non-blocking).
+  // If this fails, the circuit breaker in MnemoBridge will prevent repeated
+  // connection attempts from hooks, avoiding log noise.
   setTimeout(async () => {
     try {
       await bridge.connect()
       console.log(`[Mnemo] Connected to persistent memory for ${input.directory}`)
-    } catch (e) {
-      console.error(`[Mnemo] Background connect failed: ${e}`)
+    } catch {
+      // Silently handled -- circuit breaker will prevent further attempts.
+      // Hooks check bridge.isAvailable() before calling, so no cascading errors.
     }
   }, 100)
 

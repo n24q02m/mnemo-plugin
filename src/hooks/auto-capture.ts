@@ -75,6 +75,10 @@ export const autoCaptureHook = async (input: { event: Event }, directory: string
 async function processCapture(directory: string) {
   try {
     const bridge = MnemoBridge.getInstance()
+
+    // Skip if bridge is unavailable (circuit breaker open)
+    if (!bridge.isAvailable()) return
+
     const projectName = getProjectName(directory)
 
     const content = sessionBuffer.join('\n')

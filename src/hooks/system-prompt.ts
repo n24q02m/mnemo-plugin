@@ -60,11 +60,15 @@ export const systemPromptHook = async (
 ) => {
   try {
     const bridge = MnemoBridge.getInstance()
-    const projectName = getProjectName(directory)
-    const budget = computeBudget(input.model)
 
     // Always inject self-awareness block (outside budget)
     output.system.push(SELF_AWARENESS)
+
+    // Skip memory injection if bridge is unavailable (circuit breaker open)
+    if (!bridge.isAvailable()) return
+
+    const projectName = getProjectName(directory)
+    const budget = computeBudget(input.model)
 
     // Search memories relevant to current project
     const searchRes = await bridge.callTool('memory', {
