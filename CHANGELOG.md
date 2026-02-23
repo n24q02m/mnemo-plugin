@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.2 (2026-02-23)
+
+### Bug Fixes
+
+- Remove startup log message from TUI output
+  ([`5718a5b`](https://github.com/n24q02m/mnemo-plugin/commit/5718a5b1abc05faa338b172272fb3e73ba6365fb))
+
+
 ## v1.2.1 (2026-02-23)
 
 ### Bug Fixes
