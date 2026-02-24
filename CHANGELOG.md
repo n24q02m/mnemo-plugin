@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.3 (2026-02-24)
+
+### Bug Fixes
+
+- Redirect all plugin logs to file to prevent TUI corruption
+  ([`f0f01f0`](https://github.com/n24q02m/mnemo-plugin/commit/f0f01f0657ffcc0b40a34d9c202795ed340b2025))
+
+
 ## v1.2.2 (2026-02-23)
 
 ### Bug Fixes
