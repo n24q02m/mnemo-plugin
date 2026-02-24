@@ -1,3 +1,4 @@
+import { logger } from '../logger.js'
 /**
  * Auto-Capture Hook
  *
@@ -101,8 +102,8 @@ async function processCapture(directory: string) {
       tags: [projectName, 'preference']
     })
 
-    console.log(`[Mnemo] Auto-captured a new rule for ${projectName}`)
+    logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
   } catch (error) {
-    console.error(`[Mnemo] Error in auto-capture: ${error}`)
+    logger.error(`[Mnemo] Error in auto-capture: ${error}`)
   }
 }

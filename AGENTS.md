@@ -132,7 +132,7 @@ import { MnemoBridge } from './bridge.js'
 ### Error Handling
 
 - All tool execute functions catch errors and return user-friendly strings (never throw)
-- Bridge errors are caught at hook level with console.error logging
+- Bridge errors are caught at hook level with `logger.error` logging (written to `~/.mnemo-mcp/plugin.log`)
 - Use `unknown` type for catch variables, narrow with `instanceof Error`
 
 ### Biome Lint Rules

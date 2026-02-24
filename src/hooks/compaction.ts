@@ -1,3 +1,4 @@
+import { logger } from '../logger.js'
 /**
  * Compaction Hook
  *
@@ -49,6 +50,6 @@ export const compactionHook = async (_input: { sessionID: string }, output: { co
       'When summarizing this session, explicitly preserve any user preferences, technical constraints, architectural decisions, or project rules that were discussed. These should be saved to persistent memory if not already stored.'
     )
   } catch (error) {
-    console.error(`[Mnemo] Error in compaction hook: ${error}`)
+    logger.error(`[Mnemo] Error in compaction hook: ${error}`)
   }
 }

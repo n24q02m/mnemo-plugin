@@ -1,3 +1,4 @@
+import { logger } from '../logger.js'
 /**
  * System Prompt Hook
  *
@@ -101,6 +102,6 @@ export const systemPromptHook = async (
 
     output.system.push(injection)
   } catch (error) {
-    console.error(`[Mnemo] Error injecting system prompt: ${error}`)
+    logger.error(`[Mnemo] Error injecting system prompt: ${error}`)
   }
 }
