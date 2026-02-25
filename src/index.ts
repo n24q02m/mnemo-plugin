@@ -8,13 +8,14 @@
 
 import type { Plugin } from '@opencode-ai/plugin'
 import { MnemoBridge } from './bridge.js'
-import { autoCaptureHook, messageHook } from './hooks/auto-capture.js'
+import { createAutoCaptureHooks } from './hooks/auto-capture.js'
 import { compactionHook } from './hooks/compaction.js'
 import { systemPromptHook } from './hooks/system-prompt.js'
 import { mnemoForget, mnemoRemember, mnemoSearch } from './tools/memory.js'
 
 const plugin: Plugin = async (input) => {
   const bridge = MnemoBridge.getInstance()
+  const { messageHook, autoCaptureHook } = createAutoCaptureHooks()
 
   // Start bridge connection in background (non-blocking).
   // If this fails, the circuit breaker in MnemoBridge will prevent repeated
