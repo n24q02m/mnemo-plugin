@@ -6,7 +6,7 @@ import { logger } from '../src/logger.js'
  * module-level mutable state (sessionBuffer, capturedHashes, lastCaptureTime).
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Dynamic import type for reset
 type AutoCapture = typeof import('../src/hooks/auto-capture.js')
@@ -252,10 +252,10 @@ describe('auto-capture', () => {
 
     describe('optimization', () => {
       beforeEach(() => {
-          vi.useFakeTimers()
+        vi.useFakeTimers()
       })
       afterEach(() => {
-          vi.useRealTimers()
+        vi.useRealTimers()
       })
 
       it('discards non-matching buffer even if bridge is unavailable', async () => {
