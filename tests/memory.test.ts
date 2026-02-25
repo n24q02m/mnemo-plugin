@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mnemoRemember } from '../src/tools/memory.js'
+import type { ToolContext } from '@opencode-ai/plugin/tool'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MnemoBridge } from '../src/bridge.js'
+import { mnemoRemember } from '../src/tools/memory.js'
 
 describe('mnemoRemember', () => {
   let mockBridge: any
@@ -21,7 +22,8 @@ describe('mnemoRemember', () => {
     const context = {
       directory: '/home/user/projects/my-app',
       metadata: vi.fn()
-    }
+    } as unknown as ToolContext
+
     const args = {
       content: 'This is a test memory',
       category: 'fact',
@@ -44,7 +46,8 @@ describe('mnemoRemember', () => {
     const context = {
       directory: '/home/user/projects/my-app',
       metadata: vi.fn()
-    }
+    } as unknown as ToolContext
+
     const args = {
       content: 'Test content',
       category: 'preference',
@@ -65,7 +68,8 @@ describe('mnemoRemember', () => {
     const context = {
       directory: '/path/to/project',
       metadata: vi.fn()
-    }
+    } as unknown as ToolContext
+
     // "This is a very long memory content that " is 40 chars
     const longContent = 'This is a very long memory content that should be truncated.'
     const args = {
@@ -84,7 +88,8 @@ describe('mnemoRemember', () => {
     const context = {
       directory: '/path/to/project',
       metadata: vi.fn()
-    }
+    } as unknown as ToolContext
+
     const args = {
       content: 'Test content',
       category: 'general'
@@ -101,7 +106,8 @@ describe('mnemoRemember', () => {
     const context = {
       directory: 'C:\\Users\\dev\\projects\\win-app',
       metadata: vi.fn()
-    }
+    } as unknown as ToolContext
+
     const args = {
       content: 'Windows path test',
       category: 'test',
@@ -110,8 +116,11 @@ describe('mnemoRemember', () => {
 
     await mnemoRemember.execute(args, context)
 
-    expect(mockBridge.callTool).toHaveBeenCalledWith('memory', expect.objectContaining({
-      tags: ['win-app']
-    }))
+    expect(mockBridge.callTool).toHaveBeenCalledWith(
+      'memory',
+      expect.objectContaining({
+        tags: ['win-app']
+      })
+    )
   })
 })
