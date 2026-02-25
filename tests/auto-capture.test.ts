@@ -249,5 +249,26 @@ describe('auto-capture', () => {
         expect(mockCallTool).toHaveBeenCalled()
       }
     })
+
+    it('limits buffer size to prevent memory leak', async () => {
+      const { mod, mockCallTool } = await freshModule()
+
+      // Simulate sending 100 messages
+      const messages = Array.from({ length: 100 }, (_, i) => `Message ${i} - always do something`)
+
+      for (const msg of messages) {
+        await mod.messageHook({}, { parts: [{ type: 'text', text: msg }] })
+      }
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+
+      expect(mockCallTool).toHaveBeenCalled()
+      const callArgs = mockCallTool.mock.calls[0][1]
+      const content = callArgs.content
+
+      // Buffer should be limited to last 50 items
+      expect(content).not.toContain('Message 0')
+      expect(content).toContain('Message 50')
+    })
   })
 })
