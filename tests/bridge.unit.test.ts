@@ -265,7 +265,6 @@ describe('MnemoBridge', () => {
     })
   })
 
-
   describe('callTool', () => {
     it('parses JSON response', async () => {
       const bridge = MnemoBridge.getInstance()
