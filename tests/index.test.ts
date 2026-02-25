@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import plugin from '../src/index.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MnemoBridge } from '../src/bridge.js'
 import * as autoCaptureHooks from '../src/hooks/auto-capture.js'
 import * as compactionHooks from '../src/hooks/compaction.js'
 import * as systemPromptHooks from '../src/hooks/system-prompt.js'
+import plugin from '../src/index.js'
 
 // Mock dependencies
 vi.mock('../src/bridge.js', () => {
@@ -114,11 +114,12 @@ describe('Mnemo Plugin', () => {
     const result = await plugin(input as any)
 
     const hook = result['experimental.chat.system.transform']
-    const inParams = { sessionID: '123' }
+    // Fix: provide required 'model' property
+    const inParams = { sessionID: '123', model: { providerID: 'test', modelID: 'test' } as any }
     const outParams = { system: [] }
 
     if (hook) {
-        await hook(inParams, outParams)
+      await hook(inParams, outParams)
     }
 
     expect(systemPromptHooks.systemPromptHook).toHaveBeenCalledWith(inParams, outParams, '/test/dir')
@@ -129,11 +130,13 @@ describe('Mnemo Plugin', () => {
     const result = await plugin(input as any)
 
     const hook = result['chat.message']
-    const inParams = { message: 'hello' }
-    const outParams = { parts: [] }
+    // Fix: provide required 'sessionID' property
+    const inParams = { message: 'hello', sessionID: '123' }
+    // Fix: provide required 'message' property for outParams (Part[])
+    const outParams = { parts: [], message: { role: 'user', content: 'hello' } as any }
 
     if (hook) {
-        await hook(inParams, outParams)
+      await hook(inParams, outParams as any)
     }
 
     expect(autoCaptureHooks.messageHook).toHaveBeenCalledWith(inParams, outParams)
@@ -144,10 +147,11 @@ describe('Mnemo Plugin', () => {
     const result = await plugin(input as any)
 
     const hook = result.event
-    const inParams = { event: { type: 'session.idle' } }
+    // Fix: cast as any to bypass strict Event type checks for mock
+    const inParams = { event: { type: 'session.idle' } as any }
 
     if (hook) {
-        await hook(inParams)
+      await hook(inParams)
     }
 
     expect(autoCaptureHooks.autoCaptureHook).toHaveBeenCalledWith(inParams, '/test/dir')
@@ -162,7 +166,7 @@ describe('Mnemo Plugin', () => {
     const outParams = { context: [] }
 
     if (hook) {
-        await hook(inParams, outParams)
+      await hook(inParams, outParams)
     }
 
     expect(compactionHooks.compactionHook).toHaveBeenCalledWith(inParams, outParams)
