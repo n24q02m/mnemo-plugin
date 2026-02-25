@@ -75,23 +75,34 @@ export const autoCaptureHook = async (input: { event: Event }, directory: string
 /** Extract constraints from buffered messages and store in mnemo-mcp */
 async function processCapture(directory: string) {
   try {
-    const bridge = MnemoBridge.getInstance()
-
-    // Skip if bridge is unavailable (circuit breaker open)
-    if (!bridge.isAvailable()) return
-
     const projectName = getProjectName(directory)
 
     const content = sessionBuffer.join('\n')
-    sessionBuffer.length = 0
+    // Note: Do NOT clear sessionBuffer yet. Only clear if we processed it (captured or discarded).
 
     // Only capture if content looks like a constraint/preference
-    if (!CONSTRAINT_REGEX.test(content)) return
+    if (!CONSTRAINT_REGEX.test(content)) {
+      sessionBuffer.length = 0
+      return
+    }
 
     // Dedup check
     const hash = hashContent(content)
-    if (capturedHashes.has(hash)) return
+    if (capturedHashes.has(hash)) {
+      sessionBuffer.length = 0
+      return
+    }
+
+    const bridge = MnemoBridge.getInstance()
+
+    // Skip if bridge is unavailable (circuit breaker open)
+    // IMPORTANT: If bridge is down, we return WITHOUT clearing the buffer,
+    // so we can retry capturing this content later.
+    if (!bridge.isAvailable()) return
+
+    // Bridge is available, commit to processing
     capturedHashes.add(hash)
+    sessionBuffer.length = 0
 
     const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
 
