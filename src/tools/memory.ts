@@ -9,6 +9,7 @@
 
 import { type ToolDefinition, tool } from '@opencode-ai/plugin/tool'
 import { MnemoBridge } from '../bridge.js'
+import { getProjectName } from '../utils.js'
 
 /** Memory item returned from mnemo-mcp search results */
 interface Memory {
@@ -16,13 +17,6 @@ interface Memory {
   category: string
   content: string
   tags?: string[]
-}
-
-/** Extract project name from directory path */
-function getProjectName(directory: string): string {
-  const cleanDir = directory.replace(/\\/g, '/')
-  const parts = cleanDir.split('/')
-  return parts[parts.length - 1] || 'unknown'
 }
 
 export const mnemoSearch: ToolDefinition = tool({
