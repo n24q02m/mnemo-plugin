@@ -1,19 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileLogger } from '../src/logger'
 
 const mockFs = vi.hoisted(() => ({
   existsSync: vi.fn(),
   mkdirSync: vi.fn(),
-  appendFileSync: vi.fn(),
+  appendFileSync: vi.fn()
 }))
 
 const mockOs = vi.hoisted(() => ({
   homedir: vi.fn(),
-  tmpdir: vi.fn(),
+  tmpdir: vi.fn()
 }))
 
 const mockPath = vi.hoisted(() => ({
-  join: vi.fn((...args: string[]) => args.join('/')),
+  join: vi.fn((...args: string[]) => args.join('/'))
 }))
 
 vi.mock('node:fs', () => ({
@@ -58,10 +58,7 @@ describe('FileLogger', () => {
 
     logger.info('test message')
 
-    expect(mockFs.appendFileSync).toHaveBeenCalledWith(
-      pluginLog,
-      expect.stringContaining('[INFO] test message')
-    )
+    expect(mockFs.appendFileSync).toHaveBeenCalledWith(pluginLog, expect.stringContaining('[INFO] test message'))
   })
 
   it('should fall back to tmp directory if mkdirSync fails', () => {
@@ -76,10 +73,7 @@ describe('FileLogger', () => {
 
     logger.info('fallback message')
 
-    expect(mockFs.appendFileSync).toHaveBeenCalledWith(
-      fallbackLog,
-      expect.stringContaining('[INFO] fallback message')
-    )
+    expect(mockFs.appendFileSync).toHaveBeenCalledWith(fallbackLog, expect.stringContaining('[INFO] fallback message'))
   })
 
   it('should format info messages correctly', () => {
