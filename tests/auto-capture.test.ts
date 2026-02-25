@@ -249,5 +249,29 @@ describe('auto-capture', () => {
         expect(mockCallTool).toHaveBeenCalled()
       }
     })
+
+    it('enforces maximum buffer size', async () => {
+      const { mod, mockCallTool } = await freshModule()
+
+      // Push 101 messages
+      for (let i = 0; i < 101; i++) {
+        await mod.messageHook(
+          {},
+          {
+            parts: [{ type: 'text', text: `Always message ${i}` }]
+          }
+        )
+      }
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+
+      const callArgs = mockCallTool.mock.calls[0][1]
+
+      // Should NOT contain "Always message 0" (shifted out)
+      expect(callArgs.content).not.toContain('Always message 0')
+
+      // Should contain "Always message 1" (new head)
+      expect(callArgs.content).toContain('Always message 1')
+    })
   })
 })
