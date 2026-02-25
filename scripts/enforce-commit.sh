@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-MSG_FILE=$1
-MSG=$(cat "$MSG_FILE")
-
-if ! echo "$MSG" | grep -Eq "^(feat|fix)(\([^)]+\))?: |^chore\(release\): "; then
-  echo "ERROR: Commit message must start with 'feat:', 'fix:' or 'chore(release):'"
-  echo "Only features and bug fixes are allowed to trigger a release."
-  echo "Current message:"
-  echo "$MSG"
-  exit 1
+MSG=$(head -1 "$1")
+if [[ "$MSG" =~ ^(feat|fix)(\(.+\))?:.+ ]] || [[ "$MSG" =~ ^chore\(release\):.+ ]]; then
+  exit 0
 fi
-exit 0
+echo "ERROR: Commit blocked. Only 'feat:' and 'fix:' prefixes allowed."
+echo "Got: $MSG"
+exit 1
