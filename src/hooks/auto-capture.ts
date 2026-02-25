@@ -104,6 +104,14 @@ async function processCapture(directory: string) {
 
     logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
   } catch (error) {
-    logger.error(`[Mnemo] Error in auto-capture: ${error}`)
+    let errorMessage: string
+    if (error instanceof Error) {
+      errorMessage = error.message
+    } else if (typeof error === 'object' && error !== null && 'message' in error) {
+      errorMessage = String((error as any).message)
+    } else {
+      errorMessage = String(error)
+    }
+    logger.error(`[Mnemo] Error in auto-capture: ${errorMessage}`)
   }
 }
