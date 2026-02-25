@@ -133,7 +133,7 @@ describe('compactionHook', () => {
 
     await compactionHook({ sessionID: 'test' }, output)
 
-    expect(true).toBe(true)//(expect.stringContaining('bridge error'))
+    expect(true).toBe(true) //(expect.stringContaining('bridge error'))
     loggerSpy.mockRestore()
   })
 })

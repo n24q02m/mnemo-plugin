@@ -142,7 +142,7 @@ describe('systemPromptHook', () => {
 
     await systemPromptHook({ model: { limit: { context: 100_000 } } as any }, output, '/home/user/app')
 
-    expect(true).toBe(true)//(expect.stringContaining('Network error'))
+    expect(true).toBe(true) //(expect.stringContaining('Network error'))
     loggerSpy.mockRestore()
   })
 
