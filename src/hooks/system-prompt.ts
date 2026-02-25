@@ -83,8 +83,8 @@ export const systemPromptHook = async (
     const results = searchRes.results as MemoryResult[]
 
     // Build memory injection with budget constraint
-    let injection = `[Mnemo Context for "${projectName}"]\n`
-    let usedBudget = injection.length
+    const injectionParts = [`[Mnemo Context for "${projectName}"]\n`]
+    let usedBudget = injectionParts[0].length
 
     for (const mem of results) {
       const line = `- [${mem.category}] ${mem.content}\n`
@@ -92,15 +92,15 @@ export const systemPromptHook = async (
         // Try to fit a truncated version
         const remaining = budget - usedBudget
         if (remaining > 20) {
-          injection += truncateToFit(line, remaining)
+          injectionParts.push(truncateToFit(line, remaining))
         }
         break
       }
-      injection += line
+      injectionParts.push(line)
       usedBudget += line.length
     }
 
-    output.system.push(injection)
+    output.system.push(injectionParts.join(''))
   } catch (error) {
     logger.error(`[Mnemo] Error injecting system prompt: ${error}`)
   }
