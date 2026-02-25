@@ -15,6 +15,9 @@ import { MnemoBridge } from '../bridge.js'
 /** Buffer of user message texts accumulated during the session */
 const sessionBuffer: string[] = []
 
+/** Maximum number of messages to keep in buffer to prevent memory leaks */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Set of content hashes already captured this session (dedup) */
 const capturedHashes = new Set<string>()
 
@@ -56,6 +59,9 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
     .trim()
 
   if (userText) {
+    if (sessionBuffer.length >= MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
     sessionBuffer.push(userText)
   }
 }
@@ -93,7 +99,7 @@ async function processCapture(directory: string) {
     if (capturedHashes.has(hash)) return
     capturedHashes.add(hash)
 
-    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
+    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `...${content.slice(-MAX_CAPTURE_LENGTH)}` : content
 
     await bridge.callTool('memory', {
       action: 'add',
