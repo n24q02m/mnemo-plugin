@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mnemoSearch } from '../../src/tools/memory.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MnemoBridge } from '../../src/bridge.js'
+import { mnemoSearch } from '../../src/tools/memory.js'
 
 describe('mnemoSearch', () => {
   let mockBridge: any
@@ -8,7 +8,7 @@ describe('mnemoSearch', () => {
 
   beforeEach(() => {
     // Reset singleton
-    (MnemoBridge as any).instance = undefined
+    ;(MnemoBridge as any).instance = undefined
 
     // Mock bridge instance
     mockBridge = {
