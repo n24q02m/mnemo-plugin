@@ -12,6 +12,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import { getSafeEnv } from './env.js'
 
 /** Result content item from MCP tool call */
 interface ContentItem {
@@ -124,7 +125,7 @@ export class MnemoBridge {
       command: 'uvx',
       args: ['mnemo-mcp'],
       stderr: 'ignore', // Prevent stderr backpressure and log noise
-      env: { ...process.env, LOG_LEVEL: 'WARNING' }
+      env: { ...getSafeEnv(), LOG_LEVEL: 'WARNING' }
     })
 
     this.client = new Client(
