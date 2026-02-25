@@ -117,9 +117,9 @@ export const systemPromptHook = async (
         const remaining = budget - usedBudget
 
         if (remaining > overhead + 20) {
-           const availableForContent = remaining - overhead
-           const truncatedContent = escapeXML(truncateToFit(mem.content, availableForContent))
-           injection += `  <memory category="${category}">${truncatedContent}</memory>\n`
+          const availableForContent = remaining - overhead
+          const truncatedContent = escapeXML(truncateToFit(mem.content, availableForContent))
+          injection += `  <memory category="${category}">${truncatedContent}</memory>\n`
         }
         break
       }
