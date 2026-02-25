@@ -96,7 +96,7 @@ describe('systemPromptHook', () => {
     expect(output.system.length).toBe(2)
     expect(output.system[1]).toContain('Use TypeScript')
     expect(output.system[1]).toContain('Prefer Vitest')
-    expect(output.system[1]).toContain('[Mnemo Context for "my-app"]')
+    expect(output.system[1]).toContain('<mnemo_memories project="my-app">')
   })
 
   it('does not inject when search returns zero results', async () => {
@@ -121,7 +121,7 @@ describe('systemPromptHook', () => {
     expect(output.system.length).toBe(2)
     // The injection should contain truncated content ending with '...'
     expect(output.system[1]).toContain('...')
-    expect(output.system[1].length).toBeLessThanOrEqual(700)
+    expect(output.system[1].length).toBeLessThanOrEqual(800)
   })
 
   it('uses MIN_BUDGET when model has no context limit', async () => {
