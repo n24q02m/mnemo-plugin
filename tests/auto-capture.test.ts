@@ -6,7 +6,7 @@ import { logger } from '../src/logger.js'
  * module-level mutable state (sessionBuffer, capturedHashes, lastCaptureTime).
  */
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Dynamic import type for reset
 type AutoCapture = typeof import('../src/hooks/auto-capture.js')
@@ -248,6 +248,53 @@ describe('auto-capture', () => {
 
         expect(mockCallTool).toHaveBeenCalled()
       }
+    })
+
+    describe('optimization', () => {
+      beforeEach(() => {
+        vi.useFakeTimers()
+      })
+      afterEach(() => {
+        vi.useRealTimers()
+      })
+
+      it('discards non-matching buffer even if bridge is unavailable', async () => {
+        const { mod, mockIsAvailable, mockCallTool } = await freshModule()
+
+        // Mock bridge as unavailable initially
+        mockIsAvailable.mockReturnValue(false)
+
+        // 1. Send "Hello"
+        await mod.messageHook({}, { parts: [{ type: 'text', text: 'Hello' }] })
+
+        // 2. Trigger Idle (advance time)
+        vi.advanceTimersByTime(61000)
+        await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+
+        // 3. Send "World"
+        await mod.messageHook({}, { parts: [{ type: 'text', text: 'World' }] })
+
+        // 4. Trigger Idle (advance time)
+        vi.advanceTimersByTime(61000)
+        await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+
+        // 5. Bridge available
+        mockIsAvailable.mockReturnValue(true)
+
+        // 6. Send matching
+        await mod.messageHook({}, { parts: [{ type: 'text', text: 'Always do X' }] })
+
+        // 7. Trigger Idle
+        vi.advanceTimersByTime(61000)
+        await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+
+        // 8. Expect
+        expect(mockCallTool).toHaveBeenCalledTimes(1)
+        const content = mockCallTool.mock.calls[0][1].content
+        expect(content).toContain('Always do X')
+        expect(content).not.toContain('Hello')
+        expect(content).not.toContain('World')
+      })
     })
   })
 })
