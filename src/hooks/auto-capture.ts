@@ -104,11 +104,6 @@ async function processCapture(directory: string) {
     if (capturedHashes.has(hash)) return
     capturedHashes.add(hash)
 
-    // We slice from the END if it's too long, to keep the most recent context which likely triggered the capture
-    // Or just truncate. The original code truncated (slice(0, MAX)). Let's stick to simple truncate for now unless specified otherwise.
-    // Wait, original was `${content.slice(0, MAX_CAPTURE_LENGTH)}...`.
-    // Actually, capturing the END of a long conversation might be better if it's "chatty".
-    // But let's stick to minimal changes: just fix the leak.
     const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
 
     await bridge.callTool('memory', {
