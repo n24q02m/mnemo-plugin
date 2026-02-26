@@ -12,15 +12,6 @@ import { logger } from '../logger.js'
 import type { Event } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
 
-/** Buffer of user message texts accumulated during the session */
-const sessionBuffer: string[] = []
-
-/** Set of content hashes already captured this session (dedup) */
-const capturedHashes = new Set<string>()
-
-/** Timestamp of last capture to enforce cooldown */
-let lastCaptureTime = 0
-
 /** Minimum idle time before processing buffer (60 seconds) */
 const IDLE_THRESHOLD = 60_000
 
@@ -47,63 +38,82 @@ function getProjectName(directory: string): string {
   return parts[parts.length - 1] || 'unknown'
 }
 
-/** Chat message hook: buffer user text parts */
-export const messageHook = async (_input: unknown, output: { parts: { type: string; text?: string }[] }) => {
-  const userText = output.parts
-    .filter((p) => p.type === 'text' && p.text)
-    .map((p) => p.text as string)
-    .join('\n')
-    .trim()
+/**
+ * Create a new set of auto-capture hooks with isolated state.
+ * This ensures that session buffers and captured hashes are not shared
+ * between different plugin instances or sessions.
+ */
+export function createAutoCaptureHooks() {
+  /** Buffer of user message texts accumulated during the session */
+  const sessionBuffer: string[] = []
 
-  if (userText) {
-    sessionBuffer.push(userText)
+  /** Set of content hashes already captured this session (dedup) */
+  const capturedHashes = new Set<string>()
+
+  /** Timestamp of last capture to enforce cooldown */
+  let lastCaptureTime = 0
+
+  /** Extract constraints from buffered messages and store in mnemo-mcp */
+  async function processCapture(directory: string) {
+    try {
+      const bridge = MnemoBridge.getInstance()
+
+      // Skip if bridge is unavailable (circuit breaker open)
+      if (!bridge.isAvailable()) return
+
+      const projectName = getProjectName(directory)
+
+      const content = sessionBuffer.join('\n')
+      sessionBuffer.length = 0
+
+      // Only capture if content looks like a constraint/preference
+      if (!CONSTRAINT_REGEX.test(content)) return
+
+      // Dedup check
+      const hash = hashContent(content)
+      if (capturedHashes.has(hash)) return
+      capturedHashes.add(hash)
+
+      const trimmedContent =
+        content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
+
+      await bridge.callTool('memory', {
+        action: 'add',
+        content: `[Auto-captured for ${projectName}]: ${trimmedContent}`,
+        category: 'auto-capture',
+        tags: [projectName, 'preference']
+      })
+
+      logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
+    } catch (error) {
+      logger.error(`[Mnemo] Error in auto-capture: ${error}`)
+    }
   }
-}
 
-/** Event hook: process buffer on session idle */
-export const autoCaptureHook = async (input: { event: Event }, directory: string) => {
-  if (input.event.type !== 'session.idle') return
+  /** Chat message hook: buffer user text parts */
+  const messageHook = async (_input: unknown, output: { parts: { type: string; text?: string }[] }) => {
+    const userText = output.parts
+      .filter((p) => p.type === 'text' && p.text)
+      .map((p) => p.text as string)
+      .join('\n')
+      .trim()
 
-  const now = Date.now()
-  if (now - lastCaptureTime <= IDLE_THRESHOLD) return
-  if (sessionBuffer.length === 0) return
-
-  await processCapture(directory)
-  lastCaptureTime = now
-}
-
-/** Extract constraints from buffered messages and store in mnemo-mcp */
-async function processCapture(directory: string) {
-  try {
-    const bridge = MnemoBridge.getInstance()
-
-    // Skip if bridge is unavailable (circuit breaker open)
-    if (!bridge.isAvailable()) return
-
-    const projectName = getProjectName(directory)
-
-    const content = sessionBuffer.join('\n')
-    sessionBuffer.length = 0
-
-    // Only capture if content looks like a constraint/preference
-    if (!CONSTRAINT_REGEX.test(content)) return
-
-    // Dedup check
-    const hash = hashContent(content)
-    if (capturedHashes.has(hash)) return
-    capturedHashes.add(hash)
-
-    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
-
-    await bridge.callTool('memory', {
-      action: 'add',
-      content: `[Auto-captured for ${projectName}]: ${trimmedContent}`,
-      category: 'auto-capture',
-      tags: [projectName, 'preference']
-    })
-
-    logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
-  } catch (error) {
-    logger.error(`[Mnemo] Error in auto-capture: ${error}`)
+    if (userText) {
+      sessionBuffer.push(userText)
+    }
   }
+
+  /** Event hook: process buffer on session idle */
+  const autoCaptureHook = async (input: { event: Event }, directory: string) => {
+    if (input.event.type !== 'session.idle') return
+
+    const now = Date.now()
+    if (now - lastCaptureTime <= IDLE_THRESHOLD) return
+    if (sessionBuffer.length === 0) return
+
+    await processCapture(directory)
+    lastCaptureTime = now
+  }
+
+  return { messageHook, autoCaptureHook }
 }

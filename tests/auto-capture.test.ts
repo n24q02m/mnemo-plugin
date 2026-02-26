@@ -2,17 +2,13 @@ import { logger } from '../src/logger.js'
 /**
  * Unit tests for auto-capture hooks — message buffering, constraint extraction, dedup.
  *
- * Each test gets a fresh module instance because auto-capture.ts has
- * module-level mutable state (sessionBuffer, capturedHashes, lastCaptureTime).
+ * Each test gets a fresh set of hooks from the factory function.
  */
 
 import { describe, expect, it, vi } from 'vitest'
 
-// Dynamic import type for reset
-type AutoCapture = typeof import('../src/hooks/auto-capture.js')
-
-/** Create fresh mock functions and module for each test */
-async function freshModule() {
+/** Create fresh mock functions and hooks for each test */
+async function freshHooks() {
   vi.resetModules()
 
   const mockIsAvailable = vi.fn().mockReturnValue(true)
@@ -27,14 +23,15 @@ async function freshModule() {
     }
   }))
 
-  const mod: AutoCapture = await import('../src/hooks/auto-capture.js')
-  return { mod, mockIsAvailable, mockCallTool }
+  const { createAutoCaptureHooks } = await import('../src/hooks/auto-capture.js')
+  const hooks = createAutoCaptureHooks()
+  return { ...hooks, mockIsAvailable, mockCallTool }
 }
 
 describe('auto-capture', () => {
   describe('messageHook', () => {
     it('buffers text parts from output', async () => {
-      const { mod } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
       const output = {
         parts: [
           { type: 'text', text: 'Hello world' },
@@ -43,57 +40,70 @@ describe('auto-capture', () => {
         ]
       }
 
-      await mod.messageHook({}, output)
+      await messageHook({}, output)
       // Buffer is populated; verified indirectly by triggering capture
+
+      // Trigger capture to verify buffer content
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      expect(mockCallTool).toHaveBeenCalledWith(
+        'memory',
+        expect.objectContaining({
+          content: expect.stringContaining('Always use TypeScript')
+        })
+      )
     })
 
     it('ignores non-text parts', async () => {
-      const { mod } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
       const output = {
         parts: [{ type: 'image', data: 'abc' }]
       }
 
-      await mod.messageHook({}, output)
-      // No text buffered
+      await messageHook({}, output)
+
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('ignores empty text', async () => {
-      const { mod } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
       const output = {
         parts: [{ type: 'text', text: '   ' }]
       }
 
-      await mod.messageHook({}, output)
-      // Whitespace-only is trimmed to empty, not buffered
+      await messageHook({}, output)
+
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      expect(mockCallTool).not.toHaveBeenCalled()
     })
   })
 
   describe('autoCaptureHook', () => {
     it('only triggers on session.idle event', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { autoCaptureHook, mockCallTool } = await freshHooks()
 
-      await mod.autoCaptureHook({ event: { type: 'session.start' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.start' } as any }, '/home/user/app')
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('skips when buffer is empty', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { autoCaptureHook, mockCallTool } = await freshHooks()
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('captures constraint-like messages on idle', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'You must always use pnpm for package management' }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/my-project')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/my-project')
 
       expect(mockCallTool).toHaveBeenCalledWith(
         'memory',
@@ -106,76 +116,76 @@ describe('auto-capture', () => {
     })
 
     it('skips non-constraint messages', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'Hello, how are you today?' }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('deduplicates identical content within session', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
 
       // First capture
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'Always use strict mode' }]
         }
       )
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).toHaveBeenCalledTimes(1)
 
       // Same content again — buffer the same text
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'Always use strict mode' }]
         }
       )
       // Second capture attempt should be deduped by hash
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       // Still only 1 call — second was deduped
       expect(mockCallTool).toHaveBeenCalledTimes(1)
     })
 
     it('skips when bridge is unavailable', async () => {
-      const { mod, mockIsAvailable, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockIsAvailable, mockCallTool } = await freshHooks()
       mockIsAvailable.mockReturnValue(false)
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'You must always test your code' }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(mockCallTool).not.toHaveBeenCalled()
     })
 
     it('truncates long content to MAX_CAPTURE_LENGTH', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
       const longConstraint = `You must always ${'follow this rule '.repeat(100)}`
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: longConstraint }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       const callArgs = mockCallTool.mock.calls[0][1]
       // Content should be truncated (500 char limit + prefix)
@@ -183,34 +193,34 @@ describe('auto-capture', () => {
     })
 
     it('catches errors without throwing', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
       mockCallTool.mockRejectedValue(new Error('bridge down'))
       const loggerSpy = vi.spyOn(logger, 'error').mockImplementation(() => {})
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'Never use var in JavaScript' }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
       expect(true).toBe(true)
       loggerSpy.mockRestore()
     })
 
     it('extracts project name from Windows path', async () => {
-      const { mod, mockCallTool } = await freshModule()
+      const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
 
-      await mod.messageHook(
+      await messageHook(
         {},
         {
           parts: [{ type: 'text', text: 'Ensure all tests pass before commit' }]
         }
       )
 
-      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, 'C:\\Users\\dev\\projects\\win-project')
+      await autoCaptureHook({ event: { type: 'session.idle' } as any }, 'C:\\Users\\dev\\projects\\win-project')
 
       expect(mockCallTool).toHaveBeenCalledWith(
         'memory',
@@ -235,16 +245,16 @@ describe('auto-capture', () => {
       ]
 
       for (const keyword of keywords) {
-        const { mod, mockCallTool } = await freshModule()
+        const { messageHook, autoCaptureHook, mockCallTool } = await freshHooks()
 
-        await mod.messageHook(
+        await messageHook(
           {},
           {
             parts: [{ type: 'text', text: `You ${keyword} use this convention in code` }]
           }
         )
 
-        await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+        await autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
 
         expect(mockCallTool).toHaveBeenCalled()
       }
