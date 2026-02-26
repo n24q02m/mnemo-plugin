@@ -1,8 +1,15 @@
 # Mnemo Plugin
 
 [![CI](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@n24q02m/mnemo-plugin)](https://www.npmjs.com/package/@n24q02m/mnemo-plugin)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Codecov](https://img.shields.io/codecov/c/github/n24q02m/mnemo-plugin?logo=codecov&logoColor=white)](https://codecov.io/gh/n24q02m/mnemo-plugin)
+[![npm](https://img.shields.io/npm/v/@n24q02m/mnemo-plugin?logo=npm&logoColor=white)](https://www.npmjs.com/package/@n24q02m/mnemo-plugin)
+[![License: MIT](https://img.shields.io/github/license/n24q02m/mnemo-plugin)](https://opensource.org/licenses/MIT)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](#)
+[![Node.js](https://img.shields.io/badge/Node.js-5FA04E?logo=nodedotjs&logoColor=white)](#)
+[![MCP](https://img.shields.io/badge/MCP-000000?logo=anthropic&logoColor=white)](#)
+[![semantic-release](https://img.shields.io/badge/semantic--release-e10079?logo=semantic-release&logoColor=white)](https://github.com/python-semantic-release/python-semantic-release)
+[![Renovate](https://img.shields.io/badge/renovate-enabled-1A1F6C?logo=renovatebot&logoColor=white)](https://developer.mend.io/)
 
 Universal Memory Plugin for [OpenCode](https://opencode.ai) & [Claude Code](https://docs.anthropic.com/en/docs/claude-code) -- Powered by [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp).
 
