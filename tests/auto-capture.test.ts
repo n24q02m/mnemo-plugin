@@ -249,5 +249,38 @@ describe('auto-capture', () => {
         expect(mockCallTool).toHaveBeenCalled()
       }
     })
+
+    it('limits session buffer size to avoid memory leaks', async () => {
+      const { mod, mockCallTool } = await freshModule()
+
+      // Push 150 messages
+      // The limit we intend to implement is 100.
+      // We expect the first 50 to be dropped.
+      for (let i = 1; i <= 150; i++) {
+        await mod.messageHook(
+          {},
+          {
+            parts: [{ type: 'text', text: `message ${i} - always use distinct content` }]
+          }
+        )
+      }
+
+      // Trigger capture
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/perf-project')
+
+      expect(mockCallTool).toHaveBeenCalledTimes(1)
+      const callArgs = mockCallTool.mock.calls[0][1]
+      const content = callArgs.content
+
+      // Check that message 1 is NOT present
+      expect(content).not.toContain('message 1 -')
+
+      // Check that message 51 IS NOT present (it should be truncated by MAX_CAPTURE_LENGTH)
+      // Since we now capture the END of the buffer, the start (message 51) is lost if buffer > 500 chars.
+      expect(content).not.toContain('message 51 -')
+
+      // Check that message 150 IS present (most recent)
+      expect(content).toContain('message 150 -')
+    })
   })
 })
