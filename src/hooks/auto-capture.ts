@@ -27,6 +27,9 @@ const IDLE_THRESHOLD = 60_000
 /** Maximum content length to store per auto-capture */
 const MAX_CAPTURE_LENGTH = 500
 
+/** Maximum number of messages to keep in session buffer */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Regex to detect constraint-like user statements */
 const CONSTRAINT_REGEX = /\b(always|never|must|prefer|don't|do not|should not|make sure|ensure|require)\b/i
 
@@ -56,6 +59,9 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
     .trim()
 
   if (userText) {
+    if (sessionBuffer.length >= MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
     sessionBuffer.push(userText)
   }
 }
