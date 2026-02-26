@@ -48,6 +48,26 @@ function computeBudget(model: Model): number {
   return Math.max(MIN_BUDGET, Math.min(MAX_BUDGET, budget))
 }
 
+/** Escape special characters for XML */
+function escapeXML(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<':
+        return '&lt;'
+      case '>':
+        return '&gt;'
+      case '&':
+        return '&amp;'
+      case "'":
+        return '&apos;'
+      case '"':
+        return '&quot;'
+      default:
+        return c
+    }
+  })
+}
+
 /** Truncate text to fit within character budget */
 function truncateToFit(text: string, budget: number): string {
   if (text.length <= budget) return text
@@ -83,16 +103,23 @@ export const systemPromptHook = async (
     const results = searchRes.results as MemoryResult[]
 
     // Build memory injection with budget constraint
-    let injection = `[Mnemo Context for "${projectName}"]\n`
-    let usedBudget = injection.length
+    let injection = `<mnemo_memories project="${escapeXML(projectName)}">\n`
+    let usedBudget = injection.length + 20 // Buffer for closing tag
 
     for (const mem of results) {
-      const line = `- [${mem.category}] ${mem.content}\n`
+      const category = escapeXML(mem.category)
+      const content = escapeXML(mem.content)
+      const line = `  <memory category="${category}">${content}</memory>\n`
+
       if (usedBudget + line.length > budget) {
-        // Try to fit a truncated version
+        // Try to fit a truncated version (if significant budget remains)
+        const overhead = `  <memory category="${category}">...</memory>\n`.length
         const remaining = budget - usedBudget
-        if (remaining > 20) {
-          injection += truncateToFit(line, remaining)
+
+        if (remaining > overhead + 20) {
+          const availableForContent = remaining - overhead
+          const truncatedContent = escapeXML(truncateToFit(mem.content, availableForContent))
+          injection += `  <memory category="${category}">${truncatedContent}</memory>\n`
         }
         break
       }
@@ -100,6 +127,7 @@ export const systemPromptHook = async (
       usedBudget += line.length
     }
 
+    injection += '</mnemo_memories>'
     output.system.push(injection)
   } catch (error) {
     logger.error(`[Mnemo] Error injecting system prompt: ${error}`)
