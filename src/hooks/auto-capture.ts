@@ -11,6 +11,7 @@ import { logger } from '../logger.js'
 
 import type { Event } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
+import { getProjectName } from '../utils.js'
 
 /** Buffer of user message texts accumulated during the session */
 const sessionBuffer: string[] = []
@@ -38,13 +39,6 @@ function hashContent(content: string): string {
     hash = ((hash << 5) - hash + char) | 0
   }
   return hash.toString(36)
-}
-
-/** Extract project name from directory path */
-function getProjectName(directory: string): string {
-  const cleanDir = directory.replace(/\\/g, '/')
-  const parts = cleanDir.split('/')
-  return parts[parts.length - 1] || 'unknown'
 }
 
 /** Chat message hook: buffer user text parts */

@@ -9,6 +9,7 @@ import { logger } from '../logger.js'
 
 import type { Model } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
+import { getProjectName } from '../utils.js'
 
 /** Memory item returned from mnemo-mcp search */
 interface MemoryResult {
@@ -31,13 +32,6 @@ const SELF_AWARENESS = `You have persistent memory via the Mnemo system. You can
 - mnemo_remember: Permanently store new facts, rules, preferences
 - mnemo_forget: Delete outdated or incorrect memories
 Proactively search memory when entering a new codebase or when the user asks about past decisions.`
-
-/** Extract project name from directory path */
-function getProjectName(directory: string): string {
-  const cleanDir = directory.replace(/\\/g, '/')
-  const parts = cleanDir.split('/')
-  return parts[parts.length - 1] || 'unknown'
-}
 
 /** Compute injection budget based on model context limit */
 function computeBudget(model: Model): number {
