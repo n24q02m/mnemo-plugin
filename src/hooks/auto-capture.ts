@@ -27,6 +27,9 @@ const IDLE_THRESHOLD = 60_000
 /** Maximum content length to store per auto-capture */
 const MAX_CAPTURE_LENGTH = 500
 
+/** Maximum number of messages to keep in the session buffer */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Regex to detect constraint-like user statements */
 const CONSTRAINT_REGEX = /\b(always|never|must|prefer|don't|do not|should not|make sure|ensure|require)\b/i
 
@@ -57,6 +60,9 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
 
   if (userText) {
     sessionBuffer.push(userText)
+    if (sessionBuffer.length > MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
   }
 }
 
@@ -75,25 +81,33 @@ export const autoCaptureHook = async (input: { event: Event }, directory: string
 /** Extract constraints from buffered messages and store in mnemo-mcp */
 async function processCapture(directory: string) {
   try {
+    const content = sessionBuffer.join('\n')
+
+    // Performance Optimization: content validation occurs before checking bridge availability.
+    // Irrelevant data is discarded immediately to prevent memory leaks during long sessions
+    // where the bridge is unavailable.
+    if (!CONSTRAINT_REGEX.test(content)) {
+      sessionBuffer.length = 0
+      return
+    }
+
     const bridge = MnemoBridge.getInstance()
 
     // Skip if bridge is unavailable (circuit breaker open)
+    // Relevant data is preserved in the buffer for the next attempt.
     if (!bridge.isAvailable()) return
 
-    const projectName = getProjectName(directory)
-
-    const content = sessionBuffer.join('\n')
+    // Clear buffer now that we are going to process it
     sessionBuffer.length = 0
 
-    // Only capture if content looks like a constraint/preference
-    if (!CONSTRAINT_REGEX.test(content)) return
+    const projectName = getProjectName(directory)
 
     // Dedup check
     const hash = hashContent(content)
     if (capturedHashes.has(hash)) return
     capturedHashes.add(hash)
 
-    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
+    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `...${content.slice(-MAX_CAPTURE_LENGTH)}` : content
 
     await bridge.callTool('memory', {
       action: 'add',
