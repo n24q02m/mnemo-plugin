@@ -249,5 +249,71 @@ describe('auto-capture', () => {
         expect(mockCallTool).toHaveBeenCalled()
       }
     })
+
+    it('discards irrelevant content immediately even if bridge is unavailable', async () => {
+      vi.useFakeTimers()
+      const { mod, mockIsAvailable, mockCallTool } = await freshModule()
+
+      // 1. Bridge is DOWN
+      mockIsAvailable.mockReturnValue(false)
+
+      // 2. Add irrelevant message
+      await mod.messageHook({}, { parts: [{ type: 'text', text: 'Just chatting about the weather' }] })
+
+      // 3. Trigger idle - should clear buffer because content is irrelevant
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+      expect(mockCallTool).not.toHaveBeenCalled()
+
+      // Advance time beyond cooldown
+      vi.advanceTimersByTime(65000)
+
+      // 4. Bridge is UP
+      mockIsAvailable.mockReturnValue(true)
+
+      // 5. Add relevant message
+      await mod.messageHook({}, { parts: [{ type: 'text', text: 'You must always write tests' }] })
+
+      // 6. Trigger idle - should only capture relevant message
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+
+      expect(mockCallTool).toHaveBeenCalledTimes(1)
+      const callArgs = mockCallTool.mock.calls[0][1]
+
+      // Irrelevant message should NOT be present (buffer was cleared in step 3)
+      expect(callArgs.content).not.toContain('Just chatting about the weather')
+      expect(callArgs.content).toContain('You must always write tests')
+
+      vi.useRealTimers()
+    })
+
+    it('preserves relevant content in buffer when bridge is unavailable', async () => {
+      vi.useFakeTimers()
+      const { mod, mockIsAvailable, mockCallTool } = await freshModule()
+
+      // 1. Bridge is DOWN
+      mockIsAvailable.mockReturnValue(false)
+
+      // 2. Add RELEVANT message
+      await mod.messageHook({}, { parts: [{ type: 'text', text: 'You must always write clean code' }] })
+
+      // 3. Trigger idle - bridge is down, so it should NOT capture, but buffer MUST be preserved
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+      expect(mockCallTool).not.toHaveBeenCalled()
+
+      // Advance time beyond cooldown
+      vi.advanceTimersByTime(65000)
+
+      // 4. Bridge is UP
+      mockIsAvailable.mockReturnValue(true)
+
+      // 5. Trigger idle again (without adding new messages) - should process the PRESERVED buffer
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/app')
+
+      expect(mockCallTool).toHaveBeenCalledTimes(1)
+      const callArgs = mockCallTool.mock.calls[0][1]
+      expect(callArgs.content).toContain('You must always write clean code')
+
+      vi.useRealTimers()
+    })
   })
 })
