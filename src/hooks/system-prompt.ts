@@ -102,6 +102,6 @@ export const systemPromptHook = async (
 
     output.system.push(injection)
   } catch (error) {
-    logger.error(`[Mnemo] Error injecting system prompt: ${error}`)
+    logger.error(`[Mnemo] Error injecting system prompt: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
