@@ -87,6 +87,6 @@ jobs:
 
       - run: bun run build
 
-      - run: bunx npm publish --no-git-checks --tag ${{ needs.release.outputs.is_prerelease == 'true' && 'beta' || 'latest' }}
+      - run: bun x npm publish --no-git-checks --tag ${{ needs.release.outputs.is_prerelease == 'true' && 'beta' || 'latest' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
