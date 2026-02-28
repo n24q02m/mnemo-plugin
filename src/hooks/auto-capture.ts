@@ -27,6 +27,9 @@ const IDLE_THRESHOLD = 60_000
 /** Maximum content length to store per auto-capture */
 const MAX_CAPTURE_LENGTH = 500
 
+/** Maximum number of messages to keep in session buffer */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Regex to detect constraint-like user statements */
 const CONSTRAINT_REGEX = /\b(always|never|must|prefer|don't|do not|should not|make sure|ensure|require)\b/i
 
@@ -57,6 +60,10 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
 
   if (userText) {
     sessionBuffer.push(userText)
+    // Enforce max buffer size to prevent memory leaks/DoS
+    if (sessionBuffer.length > MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
   }
 }
 
@@ -77,16 +84,20 @@ async function processCapture(directory: string) {
   try {
     const bridge = MnemoBridge.getInstance()
 
+    // 1. Extract content and clear buffer immediately
+    // This prevents memory accumulation if we return early or error out
+    const content = sessionBuffer.join('\n')
+    sessionBuffer.length = 0
+
+    // 2. Validate content - if it's not a constraint, we're done.
+    // We do this BEFORE checking bridge availability so we don't keep retrying/buffering irrelevant data.
+    if (!CONSTRAINT_REGEX.test(content)) return
+
+    // 3. Now check bridge availability
     // Skip if bridge is unavailable (circuit breaker open)
     if (!bridge.isAvailable()) return
 
     const projectName = getProjectName(directory)
-
-    const content = sessionBuffer.join('\n')
-    sessionBuffer.length = 0
-
-    // Only capture if content looks like a constraint/preference
-    if (!CONSTRAINT_REGEX.test(content)) return
 
     // Dedup check
     const hash = hashContent(content)
