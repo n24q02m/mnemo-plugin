@@ -11,7 +11,7 @@
   "version": "1.2.3",
   "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "bun@1.2.18",
   "publishConfig": {
     "access": "public"
   },
@@ -26,16 +26,16 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "type-check": "tsc --noEmit",
-    "check": "biome check . && pnpm type-check",
-    "check:fix": "biome check --write . && pnpm type-check",
-    "prepublishOnly": "pnpm build"
+    "check": "biome check . && bun run type-check",
+    "check:fix": "biome check --write . && bun run type-check",
+    "prepublishOnly": "bun run build"
   },
   "bin": {
     "mnemo-plugin": "bin/cli.mjs"
   },
   "engines": {
     "node": ">=24.0.0",
-    "pnpm": ">=9.0.0"
+    "bun": ">=1.2.0"
   },
   "files": [
     "build/",

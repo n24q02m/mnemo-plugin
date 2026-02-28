@@ -115,12 +115,12 @@ The MCP server provides three mega-tools. See [mnemo-mcp](https://github.com/n24
 mise run setup
 
 # Development
-pnpm dev
+bun run dev
 
 # Quality checks
-pnpm check        # biome + tsc
-pnpm test          # vitest
-pnpm build         # tsc + cli bundle
+bun run check        # biome + tsc
+bun run test          # vitest
+bun run build         # tsc + cli bundle
 
 # Shortcuts
 mise run lint

@@ -1,34 +1,34 @@
 # AGENTS.md - mnemo-plugin
 
-Universal Memory Plugin for OpenCode & Claude Code. TypeScript, Node.js >= 24, pnpm, ESM.
+Universal Memory Plugin for OpenCode & Claude Code. TypeScript, Node.js >= 24, bun, ESM.
 Bridges to mnemo-mcp (Python MCP server) via @modelcontextprotocol/sdk stdio transport.
 
 ## Build / Lint / Test Commands
 
 ```bash
-pnpm install                # Install dependencies
-pnpm build                  # tsc --build && esbuild CLI bundle
-pnpm check                  # Biome check + tsc --noEmit (CI command)
-pnpm check:fix              # Auto-fix Biome + type check
-pnpm test                   # vitest --passWithNoTests
-pnpm test:watch             # vitest watch
-pnpm test:coverage          # vitest --coverage
-pnpm lint                   # biome lint src
-pnpm format                 # biome format --write .
-pnpm type-check             # tsc --noEmit
-pnpm dev                    # tsx watch dev server
+bun install                 # Install dependencies
+bun run build               # tsc --build && esbuild CLI bundle
+bun run check               # Biome check + tsc --noEmit (CI command)
+bun run check:fix           # Auto-fix Biome + type check
+bun run test                # vitest --passWithNoTests
+bun run test:watch          # vitest watch
+bun run test:coverage       # vitest --coverage
+bun run lint                # biome lint src
+bun run format              # biome format --write .
+bun run type-check          # tsc --noEmit
+bun run dev                 # tsx watch dev server
 
 # Run a single test file
-pnpm vitest run tests/bridge.test.ts
+bun run vitest run tests/bridge.test.ts
 
 # Run a single test by name
-pnpm vitest run -t "test name pattern"
+bun run vitest run -t "test name pattern"
 
 # Mise shortcuts
 mise run setup              # Full dev environment setup
-mise run lint               # pnpm check
-mise run test               # pnpm test
-mise run fix                # pnpm check:fix
+mise run lint               # bun run check
+mise run test               # bun run test
+mise run fix                # bun run check:fix
 ```
 
 ## Architecture
@@ -176,4 +176,4 @@ Conventional Commits: `type(scope): message`. Only `feat` and `fix` allowed (enf
 
 1. `biome check --write` (lint + format)
 2. `tsc --noEmit` (type check)
-3. `pnpm test` (run tests)
+3. `bun run test` (run tests)

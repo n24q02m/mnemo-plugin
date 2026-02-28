@@ -5,7 +5,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 24+
-- [pnpm](https://pnpm.io/) 10+
+- [Bun](https://bun.sh/) 1.2+
 - [uv](https://docs.astral.sh/uv/) (for mnemo-mcp backend)
 - [mise](https://mise.jdx.dev/) (recommended)
 
@@ -14,7 +14,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 ```bash
 git clone https://github.com/n24q02m/mnemo-plugin.git
 cd mnemo-plugin
-mise run setup    # or: pnpm install
+mise run setup    # or: bun install
 ```
 
 ## Development Workflow
@@ -26,9 +26,9 @@ mise run setup    # or: pnpm install
 
 2. Make your changes and test:
    ```bash
-   pnpm test          # Run tests
-   pnpm check         # Lint + type check
-   pnpm dev           # Dev server with watch
+   bun run test          # Run tests
+   bun run check         # Lint + type check
+   bun run dev           # Dev server with watch
    ```
 
 3. Commit using [Conventional Commits](https://www.conventionalcommits.org/):
@@ -73,8 +73,8 @@ scripts/
 - Use `*.test.ts` naming convention
 
 ```bash
-pnpm test             # Run all tests
-pnpm test:watch       # Watch mode
+bun run test             # Run all tests
+bun run test:watch       # Watch mode
 ```
 
 ## Pull Request Guidelines

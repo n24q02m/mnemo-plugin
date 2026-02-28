@@ -4,7 +4,6 @@ dist
 bin/
 
 .cache
-.yarn/cache
 .eslintcache
 
 .cursor
@@ -17,3 +16,5 @@ logs_*/
 .jules/
 .venv/
 coverage/
+nul
+.biome_cache/

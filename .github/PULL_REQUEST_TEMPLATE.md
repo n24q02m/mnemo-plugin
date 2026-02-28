@@ -26,7 +26,7 @@ Closes #(issue number)
 
 Describe the tests you ran to verify your changes:
 
-- [ ] Existing tests pass (`pnpm test`)
+- [ ] Existing tests pass (`bun run test`)
 - [ ] Added new tests for new functionality
 - [ ] Tested manually with OpenCode plugin
 
