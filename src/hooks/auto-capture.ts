@@ -27,6 +27,9 @@ const IDLE_THRESHOLD = 60_000
 /** Maximum content length to store per auto-capture */
 const MAX_CAPTURE_LENGTH = 500
 
+/** Maximum number of messages to buffer before discarding oldest (prevents memory leak/DoS) */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Regex to detect constraint-like user statements */
 const CONSTRAINT_REGEX = /\b(always|never|must|prefer|don't|do not|should not|make sure|ensure|require)\b/i
 
@@ -57,6 +60,9 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
 
   if (userText) {
     sessionBuffer.push(userText)
+    if (sessionBuffer.length > MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
   }
 }
 
@@ -104,6 +110,7 @@ async function processCapture(directory: string) {
 
     logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
   } catch (error) {
-    logger.error(`[Mnemo] Error in auto-capture: ${error}`)
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`[Mnemo] Error in auto-capture: ${message}`)
   }
 }
