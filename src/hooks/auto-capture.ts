@@ -11,7 +11,13 @@
 
 import type { Event } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
-import { captureConstraint, getProjectName, hashContent, IDLE_THRESHOLD, CONSTRAINT_REGEX } from '../core/memory-service.js'
+import {
+  CONSTRAINT_REGEX,
+  captureConstraint,
+  getProjectName,
+  hashContent,
+  IDLE_THRESHOLD
+} from '../core/memory-service.js'
 import { logger } from '../logger.js'
 
 /** Maximum number of messages to buffer before discarding oldest (prevents memory leak/DoS) */
