@@ -5,8 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uvx mnemo-mcp --version",
-            "timeout": 10
+            "command": "node ./bin/cli.mjs hook session-start",
+            "timeout": 60
           }
         ]
       }

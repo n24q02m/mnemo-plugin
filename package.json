@@ -8,7 +8,7 @@
     "plugin",
     "mnemo"
   ],
-  "version": "1.3.0",
+  "version": "1.4.0",
   "license": "MIT",
   "type": "module",
   "packageManager": "bun@1.2.18",
@@ -70,5 +70,8 @@
   "bugs": {
     "url": "https://github.com/n24q02m/mnemo-plugin/issues"
   },
-  "homepage": "https://github.com/n24q02m/mnemo-plugin#readme"
+  "homepage": "https://github.com/n24q02m/mnemo-plugin#readme",
+  "omp": {
+    "tools": "build/src/platforms/omp/index.js"
+  }
 }
