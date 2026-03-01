@@ -23,6 +23,7 @@ export const compactionHook = async (_input: { sessionID: string }, output: { co
 
     output.context.push(COMPACTION_INSTRUCTION)
   } catch (error) {
-    logger.error(`[Mnemo] Error in compaction hook: ${error}`)
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`[Mnemo] Error in compaction hook: ${message}`)
   }
 }

@@ -66,6 +66,22 @@ describe('auto-capture', () => {
       await mod.messageHook({}, output)
       // Whitespace-only is trimmed to empty, not buffered
     })
+
+    it('limits buffer size to MAX_SESSION_BUFFER_SIZE', async () => {
+      const { mod, mockCallTool } = await freshModule()
+
+      // Add 105 messages (MAX_SESSION_BUFFER_SIZE is 100)
+      for (let i = 0; i < 105; i++) {
+        await mod.messageHook({}, { parts: [{ type: 'text', text: `message ${i} must be tested` }] })
+      }
+
+      await mod.autoCaptureHook({ event: { type: 'session.idle' } as any }, '/home/user/app')
+
+      // Ensure the capture was attempted and check content contains message 5 (shifted 0-4 out) but not message 0
+      const callArgs = mockCallTool.mock.calls[0][1]
+      expect(callArgs.content).toContain('message 5')
+      expect(callArgs.content).not.toContain('message 0')
+    })
   })
 
   describe('autoCaptureHook', () => {

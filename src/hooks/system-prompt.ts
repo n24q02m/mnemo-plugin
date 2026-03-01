@@ -30,6 +30,7 @@ export const systemPromptHook = async (
     const injection = await buildMemoryContext(bridge, projectName, budget)
     if (injection) output.system.push(injection)
   } catch (error) {
-    logger.error(`[Mnemo] Error injecting system prompt: ${error}`)
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`[Mnemo] Error injecting system prompt: ${message}`)
   }
 }

@@ -14,6 +14,9 @@ import { MnemoBridge } from '../bridge.js'
 import { captureConstraint, getProjectName, hashContent, IDLE_THRESHOLD } from '../core/memory-service.js'
 import { logger } from '../logger.js'
 
+/** Maximum number of messages to buffer before discarding oldest (prevents memory leak/DoS) */
+const MAX_SESSION_BUFFER_SIZE = 100
+
 /** Buffer of user message texts accumulated during the session */
 const sessionBuffer: string[] = []
 
@@ -33,6 +36,9 @@ export const messageHook = async (_input: unknown, output: { parts: { type: stri
 
   if (userText) {
     sessionBuffer.push(userText)
+    if (sessionBuffer.length > MAX_SESSION_BUFFER_SIZE) {
+      sessionBuffer.shift()
+    }
   }
 }
 
@@ -71,6 +77,7 @@ async function processCapture(directory: string) {
       logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
     }
   } catch (error) {
-    logger.error(`[Mnemo] Error in auto-capture: ${error}`)
+    const message = error instanceof Error ? error.message : String(error)
+    logger.error(`[Mnemo] Error in auto-capture: ${message}`)
   }
 }
