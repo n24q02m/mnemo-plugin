@@ -11,7 +11,7 @@
 
 import type { Event } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
-import { captureConstraint, getProjectName, hashContent, IDLE_THRESHOLD } from '../core/memory-service.js'
+import { captureConstraint, getProjectName, hashContent, IDLE_THRESHOLD, CONSTRAINT_REGEX } from '../core/memory-service.js'
 import { logger } from '../logger.js'
 
 /** Maximum number of messages to buffer before discarding oldest (prevents memory leak/DoS) */
@@ -57,15 +57,22 @@ export const autoCaptureHook = async (input: { event: Event }, directory: string
 /** Extract constraints from buffered messages and store in mnemo-mcp */
 async function processCapture(directory: string) {
   try {
+    const content = sessionBuffer.join('\n')
+
+    // Optimization: Only clear buffer if we actually don't have constraints,
+    // or if we successfully send them.
+    if (!CONSTRAINT_REGEX.test(content)) {
+      sessionBuffer.length = 0
+      return
+    }
+
     const bridge = MnemoBridge.getInstance()
 
-    // Skip if bridge is unavailable (circuit breaker open)
+    // Skip if bridge is unavailable (circuit breaker open) - but keep buffer intact
     if (!bridge.isAvailable()) return
 
-    const projectName = getProjectName(directory)
-
-    const content = sessionBuffer.join('\n')
     sessionBuffer.length = 0
+    const projectName = getProjectName(directory)
 
     // Dedup check
     const hash = hashContent(content)
