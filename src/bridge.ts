@@ -110,6 +110,10 @@ export class MnemoBridge {
     } catch (e) {
       this.failCount++
       this.lastFailTime = Date.now()
+      // Fix: Reset state on failure
+      this.client = null
+      this.transport = null
+      this.availableTools = null
       throw e
     } finally {
       this.connecting = null

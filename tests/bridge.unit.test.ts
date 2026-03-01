@@ -229,6 +229,40 @@ describe('MnemoBridge', () => {
 
       expect((bridge as any).connecting).toBeNull()
     })
+    it('retries connection when doConnect fails partially (leaving client set)', async () => {
+      const bridge = MnemoBridge.getInstance()
+
+      let attempt = 0
+      const mockClient = {
+        connect: vi.fn(),
+        listTools: vi.fn(),
+        callTool: vi.fn()
+      }
+
+      vi.spyOn(bridge as any, 'doConnect').mockImplementation(async () => {
+        attempt++
+        if (attempt === 1) {
+          // First attempt: simulate partial failure
+          ;(bridge as any).client = mockClient
+          throw new Error('Partial failure')
+        } else {
+          // Second attempt: success
+          ;(bridge as any).client = mockClient
+          ;(bridge as any).availableTools = new Set(['memory'])
+          ;(bridge as any).transport = { close: vi.fn() }
+          return mockClient
+        }
+      })
+
+      // First connect call - fails
+      await expect(bridge.connect()).rejects.toThrow('Partial failure')
+
+      // Second connect call - should retry and succeed
+      const client = await bridge.connect()
+
+      expect((bridge as any).doConnect).toHaveBeenCalledTimes(2)
+      expect(client).toBe(mockClient)
+    })
   })
 
   describe('callTool', () => {
