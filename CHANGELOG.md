@@ -2,6 +2,21 @@
 
 <!-- version list -->
 
+## v1.4.1 (2026-03-01)
+
+### Bug Fixes
+
+- Format codebase via biome check
+  ([`f3fb34e`](https://github.com/n24q02m/mnemo-plugin/commit/f3fb34e535c3b17edccf2bb84d90bde1411de219))
+
+- Update dependencies to fix security alerts
+  ([`a6295b3`](https://github.com/n24q02m/mnemo-plugin/commit/a6295b38b3935789aeaef738585a69136a81df07))
+
+- **auto-capture**: Prevent unbounded memory growth in message buffer (#34)
+  ([#34](https://github.com/n24q02m/mnemo-plugin/pull/34),
+  [`2c01c10`](https://github.com/n24q02m/mnemo-plugin/commit/2c01c109866f5b00756b661eb5fbdc80cc497c17))
+
+
 ## v1.4.0 (2026-03-01)
 
 ### Bug Fixes
