@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.4.0 (2026-03-01)
+
+### Bug Fixes
+
+- **windows**: Replace bunx with bun x for cross-platform compatibility
+  ([`52e5609`](https://github.com/n24q02m/mnemo-plugin/commit/52e560934bad97436e804a1da7bbb5c149a68edb))
+
+### Features
+
+- **core**: Extract memory-service, add platform adapters, add CLAUDE.md init subcommand
+  ([`f1e5c88`](https://github.com/n24q02m/mnemo-plugin/commit/f1e5c88a0f6d8c2943e0726d800ab1a0f4de6873))
+
+
 ## v1.3.0 (2026-02-28)
 
 ### Bug Fixes
