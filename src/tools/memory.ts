@@ -41,13 +41,13 @@ export const mnemoSearch: ToolDefinition = tool({
         return `No memories found matching "${args.query}".`
       }
 
-      let result = `Found ${response.count} memories:\n\n`
+      const lines: string[] = [`Found ${response.count} memories:\n`]
       for (const [i, mem] of (response.results as Memory[]).entries()) {
         const tags = mem.tags?.length ? ` [Tags: ${mem.tags.join(', ')}]` : ''
-        result += `${i + 1}. [ID: ${mem.id}] [${mem.category}]${tags} ${mem.content}\n`
+        lines.push(`${i + 1}. [ID: ${mem.id}] [${mem.category}]${tags} ${mem.content}`)
       }
 
-      return result
+      return lines.join('\n') + '\n'
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e)
       return `Failed to search memory: ${msg}`
