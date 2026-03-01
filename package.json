@@ -70,5 +70,8 @@
   "bugs": {
     "url": "https://github.com/n24q02m/mnemo-plugin/issues"
   },
-  "homepage": "https://github.com/n24q02m/mnemo-plugin#readme"
+  "homepage": "https://github.com/n24q02m/mnemo-plugin#readme",
+  "omp": {
+    "tools": "build/src/platforms/omp/index.js"
+  }
 }

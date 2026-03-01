@@ -1,4 +1,3 @@
-import { logger } from '../logger.js'
 /**
  * Auto-Capture Hook
  *
@@ -7,10 +6,13 @@ import { logger } from '../logger.js'
  * constraints are stored as auto-captured rules in mnemo-mcp.
  *
  * Uses a content hash to prevent duplicate captures within the same session.
+ * Core detection + storage logic delegated to memory-service.
  */
 
 import type { Event } from '@opencode-ai/sdk'
 import { MnemoBridge } from '../bridge.js'
+import { captureConstraint, getProjectName, hashContent, IDLE_THRESHOLD } from '../core/memory-service.js'
+import { logger } from '../logger.js'
 
 /** Buffer of user message texts accumulated during the session */
 const sessionBuffer: string[] = []
@@ -20,32 +22,6 @@ const capturedHashes = new Set<string>()
 
 /** Timestamp of last capture to enforce cooldown */
 let lastCaptureTime = 0
-
-/** Minimum idle time before processing buffer (60 seconds) */
-const IDLE_THRESHOLD = 60_000
-
-/** Maximum content length to store per auto-capture */
-const MAX_CAPTURE_LENGTH = 500
-
-/** Regex to detect constraint-like user statements */
-const CONSTRAINT_REGEX = /\b(always|never|must|prefer|don't|do not|should not|make sure|ensure|require)\b/i
-
-/** Simple string hash for deduplication */
-function hashContent(content: string): string {
-  let hash = 0
-  for (let i = 0; i < content.length; i++) {
-    const char = content.charCodeAt(i)
-    hash = ((hash << 5) - hash + char) | 0
-  }
-  return hash.toString(36)
-}
-
-/** Extract project name from directory path */
-function getProjectName(directory: string): string {
-  const cleanDir = directory.replace(/\\/g, '/')
-  const parts = cleanDir.split('/')
-  return parts[parts.length - 1] || 'unknown'
-}
 
 /** Chat message hook: buffer user text parts */
 export const messageHook = async (_input: unknown, output: { parts: { type: string; text?: string }[] }) => {
@@ -85,24 +61,15 @@ async function processCapture(directory: string) {
     const content = sessionBuffer.join('\n')
     sessionBuffer.length = 0
 
-    // Only capture if content looks like a constraint/preference
-    if (!CONSTRAINT_REGEX.test(content)) return
-
     // Dedup check
     const hash = hashContent(content)
     if (capturedHashes.has(hash)) return
-    capturedHashes.add(hash)
 
-    const trimmedContent = content.length > MAX_CAPTURE_LENGTH ? `${content.slice(0, MAX_CAPTURE_LENGTH)}...` : content
-
-    await bridge.callTool('memory', {
-      action: 'add',
-      content: `[Auto-captured for ${projectName}]: ${trimmedContent}`,
-      category: 'auto-capture',
-      tags: [projectName, 'preference']
-    })
-
-    logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
+    const captured = await captureConstraint(bridge, content, projectName)
+    if (captured) {
+      capturedHashes.add(hash)
+      logger.info(`[Mnemo] Auto-captured a new rule for ${projectName}`)
+    }
   } catch (error) {
     logger.error(`[Mnemo] Error in auto-capture: ${error}`)
   }
