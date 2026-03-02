@@ -62,7 +62,8 @@ export function register(pi: OmpPlugin): void {
       const injection = await buildMemoryContext(bridge, projectName, budget)
       if (injection) ctx.system.push(injection)
     } catch (error) {
-      logger.error(`[Mnemo/OMP] Error in system-prompt: ${error}`)
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(`[Mnemo/OMP] Error in system-prompt: ${message}`)
     }
   })
 
@@ -80,7 +81,8 @@ export function register(pi: OmpPlugin): void {
         logger.info(`[Mnemo/OMP] Auto-captured a new rule for ${projectName}`)
       }
     } catch (error) {
-      logger.error(`[Mnemo/OMP] Error in message capture: ${error}`)
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(`[Mnemo/OMP] Error in message capture: ${message}`)
     }
   })
 
@@ -95,7 +97,8 @@ export function register(pi: OmpPlugin): void {
 
       ctx.context.push(COMPACTION_INSTRUCTION)
     } catch (error) {
-      logger.error(`[Mnemo/OMP] Error in compaction: ${error}`)
+      const message = error instanceof Error ? error.message : String(error)
+      logger.error(`[Mnemo/OMP] Error in compaction: ${message}`)
     }
   })
 }
