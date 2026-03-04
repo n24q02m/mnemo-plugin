@@ -25,7 +25,9 @@ class FileLogger {
   private write(level: string, message: string) {
     try {
       const timestamp = new Date().toISOString()
-      fs.appendFileSync(this.logFile, `[${timestamp}] [${level}] ${message}\n`)
+      // Sanitize newlines to prevent Log Injection (CRLF injection)
+      const safeMessage = message.replace(/\r?\n/g, '\\n')
+      fs.appendFileSync(this.logFile, `[${timestamp}] [${level}] ${safeMessage}\n`)
     } catch {
       // Silent catch to prevent crashing the host application
     }
