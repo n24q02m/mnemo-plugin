@@ -3,7 +3,7 @@
 **Universal memory plugin for OpenCode and Claude Code -- powered by mnemo-mcp**
 
 [![CI](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/n24q02m/mnemo-plugin/actions/workflows/ci.yml)
-[![Codecov](https://img.shields.io/codecov/c/github/n24q02m/mnemo-plugin?logo=codecov&logoColor=white)](https://codecov.io/gh/n24q02m/mnemo-plugin)
+[![codecov](https://codecov.io/gh/n24q02m/mnemo-plugin/graph/badge.svg?token=K9SE0LOO2A)](https://codecov.io/gh/n24q02m/mnemo-plugin)
 [![npm](https://img.shields.io/npm/v/@n24q02m/mnemo-plugin?logo=npm&logoColor=white)](https://www.npmjs.com/package/@n24q02m/mnemo-plugin)
 [![License: MIT](https://img.shields.io/github/license/n24q02m/mnemo-plugin)](LICENSE)
 
