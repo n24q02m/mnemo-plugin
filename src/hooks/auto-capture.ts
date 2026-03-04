@@ -34,11 +34,14 @@ let lastCaptureTime = 0
 
 /** Chat message hook: buffer user text parts */
 export const messageHook = async (_input: unknown, output: { parts: { type: string; text?: string }[] }) => {
-  const userText = output.parts
-    .filter((p) => p.type === 'text' && p.text)
-    .map((p) => p.text as string)
-    .join('\n')
-    .trim()
+  const textParts: string[] = []
+  for (let i = 0; i < output.parts.length; i++) {
+    const p = output.parts[i]
+    if (p.type === 'text' && p.text) {
+      textParts.push(p.text)
+    }
+  }
+  const userText = textParts.join('\n').trim()
 
   if (userText) {
     sessionBuffer.push(userText)
