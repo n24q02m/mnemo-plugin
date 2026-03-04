@@ -6,7 +6,7 @@ import path from 'node:path'
  * FileLogger prevents plugin logs from corrupting OpenCode's TUI.
  * It writes all logs and errors to a file instead of process.stdout/stderr.
  */
-class FileLogger {
+export class FileLogger {
   private logFile: string
 
   constructor() {
