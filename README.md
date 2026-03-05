@@ -1,4 +1,8 @@
-# Mnemo Plugin
+# [ARCHIVED] Mnemo Plugin
+
+> **This repository has been archived.** The functionality of this plugin has been fully absorbed by [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp). Use `mnemo-mcp` directly as your MCP server — no plugin layer needed.
+
+---
 
 **Universal memory plugin for OpenCode and Claude Code -- powered by mnemo-mcp**
 
@@ -12,6 +16,21 @@
 [![MCP](https://img.shields.io/badge/MCP-000000?logo=anthropic&logoColor=white)](#)
 [![semantic-release](https://img.shields.io/badge/semantic--release-e10079?logo=semantic-release&logoColor=white)](https://github.com/python-semantic-release/python-semantic-release)
 [![Renovate](https://img.shields.io/badge/renovate-enabled-1A1F6C?logo=renovatebot&logoColor=white)](https://developer.mend.io/)
+
+## Migration
+
+Use [mnemo-mcp](https://github.com/n24q02m/mnemo-mcp) directly:
+
+```jsonc
+{
+  "mcpServers": {
+    "mnemo": {
+      "command": "uvx",
+      "args": ["mnemo-mcp@latest"]
+    }
+  }
+}
+```
 
 ## Features
 
