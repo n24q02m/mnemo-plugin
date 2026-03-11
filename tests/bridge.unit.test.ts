@@ -22,6 +22,8 @@ vi.mock('@modelcontextprotocol/sdk/types.js', () => ({
   CallToolResultSchema: {}
 }))
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { MnemoBridge } from '../src/bridge.js'
 
 /**
@@ -115,6 +117,29 @@ describe('MnemoBridge', () => {
   })
 
   describe('connect', () => {
+    it('initializes StdioClientTransport with pinned mnemo-mcp version', async () => {
+      const bridge = MnemoBridge.getInstance()
+
+      const mockClientInstance = {
+        connect: vi.fn().mockResolvedValue(undefined),
+        listTools: vi.fn().mockResolvedValue({ tools: [] })
+      }
+
+      // biome-ignore lint/complexity/useArrowFunction: Vitest mock constructor requires function expression
+      vi.mocked(Client).mockImplementation(function () {
+        return mockClientInstance
+      } as any)
+
+      await bridge.connect()
+
+      expect(StdioClientTransport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          command: 'uvx',
+          args: ['mnemo-mcp@1.2.0']
+        })
+      )
+    })
+
     it('connects and caches available tools', async () => {
       const bridge = MnemoBridge.getInstance()
       setupBridgeWithMockConnect(bridge)

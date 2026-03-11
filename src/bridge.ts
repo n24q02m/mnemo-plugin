@@ -122,7 +122,7 @@ export class MnemoBridge {
     // Windows execution automatically, so we just use 'uvx' (not 'uvx.cmd')
     this.transport = new StdioClientTransport({
       command: 'uvx',
-      args: ['mnemo-mcp'],
+      args: ['mnemo-mcp@1.2.0'],
       stderr: 'ignore', // Prevent stderr backpressure and log noise
       env: { ...process.env, LOG_LEVEL: 'WARNING' }
     })
