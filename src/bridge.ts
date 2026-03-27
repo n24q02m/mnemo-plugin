@@ -20,23 +20,17 @@ interface ContentItem {
 }
 
 /** Wrap a promise with a timeout. Rejects with TimeoutError if deadline exceeded. */
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`${label} timed out after ${ms}ms`))
-    }, ms)
+async function withTimeout<T>(fn: (signal: AbortSignal) => Promise<T>, ms: number, label: string): Promise<T> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => {
+    controller.abort(new Error(`${label} timed out after ${ms}ms`))
+  }, ms)
 
-    promise.then(
-      (val) => {
-        clearTimeout(timer)
-        resolve(val)
-      },
-      (err) => {
-        clearTimeout(timer)
-        reject(err)
-      }
-    )
-  })
+  try {
+    return await fn(controller.signal)
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 /** Circuit breaker: stop retrying after repeated failures */
@@ -138,10 +132,14 @@ export class MnemoBridge {
     )
 
     // Connect with timeout to prevent indefinite hang during first-run model download
-    await withTimeout(this.client.connect(this.transport), CONNECT_TIMEOUT_MS, 'MCP connect')
+    await withTimeout((signal) => this.client!.connect(this.transport!, { signal }), CONNECT_TIMEOUT_MS, 'MCP connect')
 
     // Cache available tool names on first connect
-    const toolsResult = await withTimeout(this.client.listTools(), CALL_TIMEOUT_MS, 'listTools')
+    const toolsResult = await withTimeout(
+      (signal) => this.client!.listTools(undefined, { signal }),
+      CALL_TIMEOUT_MS,
+      'listTools'
+    )
     this.availableTools = new Set(toolsResult.tools.map((t) => t.name))
 
     return this.client
@@ -161,13 +159,15 @@ export class MnemoBridge {
     }
 
     const result = await withTimeout(
-      client.callTool(
-        {
-          name,
-          arguments: args
-        },
-        CallToolResultSchema
-      ),
+      (signal) =>
+        client.callTool(
+          {
+            name,
+            arguments: args
+          },
+          CallToolResultSchema,
+          { signal }
+        ),
       CALL_TIMEOUT_MS,
       `callTool(${name})`
     )
